@@ -25,8 +25,8 @@ import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.declarations.IrValueParameter
 import org.jetbrains.kotlin.ir.descriptors.IrBuiltIns
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
-import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.symbols.IrFunctionSymbol
+import org.jetbrains.kotlin.ir.symbols.IrSimpleFunctionSymbol
 import org.jetbrains.kotlin.ir.types.classOrNull
 import org.jetbrains.kotlin.ir.types.classifierOrNull
 import org.jetbrains.kotlin.ir.util.constructors
@@ -104,7 +104,8 @@ class IrIntrinsicMethods(val irBuiltIns: IrBuiltIns, val symbols: JvmSymbols) {
                 irBuiltIns.illegalArgumentExceptionSymbol.toKey()!! to IrIllegalArgumentException,
                 irBuiltIns.throwNpeSymbol.toKey()!! to ThrowNPE,
                 irBuiltIns.andandSymbol.toKey()!! to AndAnd,
-                irBuiltIns.ororSymbol.toKey()!! to OrOr
+                irBuiltIns.ororSymbol.toKey()!! to OrOr,
+                symbols.unsafeCoerceIntrinsicSymbol.toKey()!! to UnsafeCoerce
             ) +
                     numberConversionMethods() +
                     unaryFunForPrimitives("plus", UnaryPlus) +

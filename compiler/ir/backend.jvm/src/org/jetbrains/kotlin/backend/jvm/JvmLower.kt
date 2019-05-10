@@ -115,6 +115,7 @@ val jvmPhases = namedIrFilePhase<JvmBackendContext>(
             tailrecPhase then
 
             jvmDefaultConstructorPhase then
+            jvmInlineClassPhase then
             defaultArgumentStubPhase then
 
             interfacePhase then
