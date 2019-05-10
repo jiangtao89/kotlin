@@ -384,7 +384,7 @@ class KotlinTypeMapper @JvmOverloads constructor(
         resolvedCall: ResolvedCall<*>? = null
     ): CallableMethod {
         // we generate constructors of inline classes as usual functions
-        if (descriptor is ConstructorDescriptor && kind !== OwnerKind.ERASED_INLINE_CLASS) {
+        if (descriptor is ConstructorDescriptor && (kind !== OwnerKind.ERASED_INLINE_CLASS || isIrBackend)) {
             val method = mapSignatureSkipGeneric(descriptor.original)
             val owner = mapOwner(descriptor)
             val originalDescriptor = descriptor.original
@@ -454,8 +454,10 @@ class KotlinTypeMapper @JvmOverloads constructor(
                     }
                 }
             } else {
-                val toInlinedErasedClass =
-                    functionParent.isInline && (!isAccessor(functionDescriptor) || isInlineClassConstructorAccessor(functionDescriptor))
+                // the IR backend handles inline classes by lowering
+                val toInlinedErasedClass = !isIrBackend && functionParent.isInline &&
+                        (!isAccessor(functionDescriptor) || isInlineClassConstructorAccessor(functionDescriptor))
+
                 if (toInlinedErasedClass) {
                     functionDescriptor = descriptor
                 }
@@ -616,34 +618,37 @@ class KotlinTypeMapper @JvmOverloads constructor(
             return name
         }
 
-        // Special methods for inline classes.
-        if (InlineClassDescriptorResolver.isSynthesizedBoxMethod(descriptor)) {
-            return BOX_JVM_METHOD_NAME
-        }
-        if (InlineClassDescriptorResolver.isSynthesizedUnboxMethod(descriptor)) {
-            return UNBOX_JVM_METHOD_NAME
-        }
-        if (InlineClassDescriptorResolver.isSpecializedEqualsMethod(descriptor)) {
-            return name
-        }
-
+        // Mangle inline class methods outside of the Ir backend.
         var newName = name
-        // Constructor:
-        //   either a constructor method for inline class (should be mangled),
-        //   or should stay as it is ('<init>').
-        if (descriptor is ConstructorDescriptor) {
-            if (kind === OwnerKind.ERASED_INLINE_CLASS) {
-                newName = JvmAbi.ERASED_INLINE_CONSTRUCTOR_NAME
-            } else {
+        if (!isIrBackend) {
+            // Special methods for inline classes.
+            if (InlineClassDescriptorResolver.isSynthesizedBoxMethod(descriptor)) {
+                return BOX_JVM_METHOD_NAME
+            }
+            if (InlineClassDescriptorResolver.isSynthesizedUnboxMethod(descriptor)) {
+                return UNBOX_JVM_METHOD_NAME
+            }
+            if (InlineClassDescriptorResolver.isSpecializedEqualsMethod(descriptor)) {
                 return name
             }
-        }
 
-        val suffix = getInlineClassSignatureManglingSuffix(descriptor)
-        if (suffix != null) {
-            newName += suffix
-        } else if (kind === OwnerKind.ERASED_INLINE_CLASS) {
-            newName += JvmAbi.IMPL_SUFFIX_FOR_INLINE_CLASS_MEMBERS
+            // Constructor:
+            //   either a constructor method for inline class (should be mangled),
+            //   or should stay as it is ('<init>').
+            if (descriptor is ConstructorDescriptor) {
+                if (kind === OwnerKind.ERASED_INLINE_CLASS) {
+                    newName = JvmAbi.ERASED_INLINE_CONSTRUCTOR_NAME
+                } else {
+                    return name
+                }
+            }
+
+            val suffix = getInlineClassSignatureManglingSuffix(descriptor)
+            if (suffix != null) {
+                newName += suffix
+            } else if (kind === OwnerKind.ERASED_INLINE_CLASS) {
+                newName += JvmAbi.IMPL_SUFFIX_FOR_INLINE_CLASS_MEMBERS
+            }
         }
 
         newName = sanitizeNameIfNeeded(newName, languageVersionSettings)
@@ -662,7 +667,6 @@ class KotlinTypeMapper @JvmOverloads constructor(
         ) {
             InternalNameMapper.mangleInternalName(newName, getModuleName(descriptor))
         } else newName
-
     }
 
     private fun getModuleName(descriptor: CallableMemberDescriptor): String {
@@ -811,13 +815,13 @@ class KotlinTypeMapper @JvmOverloads constructor(
             }
         } else {
             val directMember = DescriptorUtils.getDirectMember(f)
-            val thisIfNeeded: KotlinType? = when (kind) {
-                OwnerKind.DEFAULT_IMPLS -> {
+            val thisIfNeeded: KotlinType? = when {
+                kind == OwnerKind.DEFAULT_IMPLS -> {
                     val receiverTypeAndTypeParameters = patchTypeParametersForDefaultImplMethod(directMember)
                     writeFormalTypeParameters(receiverTypeAndTypeParameters.typeParameters + directMember.typeParameters, sw)
                     receiverTypeAndTypeParameters.receiverType
                 }
-                OwnerKind.ERASED_INLINE_CLASS -> {
+                !isIrBackend && kind == OwnerKind.ERASED_INLINE_CLASS -> {
                     (directMember.containingDeclaration as ClassDescriptor).defaultType
                 }
                 else -> {
@@ -1617,7 +1621,8 @@ class KotlinTypeMapper @JvmOverloads constructor(
             val containingDeclaration = descriptor.containingDeclaration
             return containingDeclaration.isInlineClass() &&
                     descriptor.kind == CallableMemberDescriptor.Kind.SYNTHESIZED &&
-                    descriptor.name == InlineClassDescriptorResolver.BOX_METHOD_NAME
+                    (descriptor.name == InlineClassDescriptorResolver.BOX_METHOD_NAME ||
+                     descriptor.name.asString() == BOX_JVM_METHOD_NAME)
         }
 
         private fun writeVoidReturn(sw: JvmSignatureWriter) {
