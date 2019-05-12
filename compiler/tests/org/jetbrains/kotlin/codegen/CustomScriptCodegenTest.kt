@@ -65,7 +65,8 @@ class CustomScriptCodegenTest : CodegenTestCase() {
 
         if (scriptDefinitions.isNotEmpty()) {
             configureScriptDefinitions(
-                scriptDefinitions.asList(), configuration, this::class.java.classLoader, MessageCollector.NONE, emptyMap()
+                scriptDefinitions.asList(), configuration, this::class.java.classLoader,
+                MessageCollector.NONE, defaultJvmScriptingHostConfiguration
             )
         }
 
