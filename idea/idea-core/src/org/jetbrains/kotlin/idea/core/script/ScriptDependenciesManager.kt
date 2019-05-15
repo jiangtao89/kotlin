@@ -30,6 +30,7 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.idea.caches.project.getAllProjectSdks
 import org.jetbrains.kotlin.idea.core.script.dependencies.SyncScriptDependenciesLoader
 import org.jetbrains.kotlin.scripting.definitions.ScriptDependenciesProvider
+import org.jetbrains.kotlin.scripting.resolve.RefinementResults
 import java.io.File
 import kotlin.script.experimental.dependencies.ScriptDependencies
 
@@ -39,18 +40,23 @@ import kotlin.script.experimental.dependencies.ScriptDependencies
 class IdeScriptDependenciesProvider(
     private val scriptDependenciesManager: ScriptDependenciesManager
 ) : ScriptDependenciesProvider {
-    override fun getScriptDependencies(file: VirtualFile): ScriptDependencies? {
-        return scriptDependenciesManager.getScriptDependencies(file)
-    }
+    override fun getRefinementResults(file: VirtualFile): RefinementResults? = scriptDependenciesManager.getScriptRefinementResults(file)
 }
 
+// TODO: rename and provide alias for compatibility - this is not only about dependencies anymore
 class ScriptDependenciesManager internal constructor(
     private val cacheUpdater: ScriptDependenciesUpdater,
     private val cache: ScriptDependenciesCache
 ) {
-    fun getScriptClasspath(file: VirtualFile): List<VirtualFile> = toVfsRoots(cacheUpdater.getCurrentDependencies(file).classpath)
+    fun getScriptClasspath(file: VirtualFile): List<VirtualFile> =
+        toVfsRoots(cacheUpdater.getCurrentRefinementResults(file)?.dependenciesClassPath.orEmpty())
+
+    @Deprecated("Migrating to configuration refinement", level = DeprecationLevel.ERROR)
     fun getScriptDependencies(file: VirtualFile): ScriptDependencies = cacheUpdater.getCurrentDependencies(file)
-    fun getScriptSdk(file: VirtualFile): Sdk? = getScriptSdk(getScriptDependencies(file))
+
+    fun getScriptRefinementResults(file: VirtualFile): RefinementResults? = cacheUpdater.getCurrentRefinementResults(file)
+
+    fun getScriptSdk(file: VirtualFile): Sdk? = Companion.getScriptSdk(getScriptRefinementResults(file))
 
     fun getScriptDependenciesClassFilesScope(file: VirtualFile) = cache.scriptDependenciesClassFilesScope(file)
 
@@ -67,6 +73,7 @@ class ScriptDependenciesManager internal constructor(
         fun getInstance(project: Project): ScriptDependenciesManager =
             ServiceManager.getService(project, ScriptDependenciesManager::class.java)
 
+        @Deprecated("migrating to new configuration refinement")
         fun getScriptSdk(dependencies: ScriptDependencies): Sdk? {
             // workaround for mismatched gradle wrapper and plugin version
             try {
@@ -96,6 +103,21 @@ class ScriptDependenciesManager internal constructor(
             )
             return null
         }
+
+        fun getScriptSdk(refinementResults: RefinementResults?): Sdk? {
+            // workaround for mismatched gradle wrapper and plugin version
+            val javaHome = try {
+                refinementResults?.javaHome?.canonicalPath
+            } catch (e: Throwable) {
+                null
+            }
+
+            return getAllProjectSdks().find { javaHome != null && File(it.homePath).canonicalPath == javaHome }
+        }
+
+
+        fun getScriptDefaultSdk(project: Project): Sdk? =
+            ProjectRootManager.getInstance(project).projectSdk ?: getAllProjectSdks().firstOrNull()
 
         fun getProjectSdk(project: Project) = ProjectRootManager.getInstance(project).projectSdk?.takeIf { it.canBeUsedForScript() }
 
