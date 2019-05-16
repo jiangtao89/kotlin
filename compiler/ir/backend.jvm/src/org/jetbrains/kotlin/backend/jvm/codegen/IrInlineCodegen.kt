@@ -50,12 +50,13 @@ class IrInlineCodegen(
         blockInfo: BlockInfo
     ) {
         if (irValueParameter.isInlineParameter() && isInlineIrExpression(argumentExpression)) {
-            val irReference: IrFunctionReference =
-                (argumentExpression as IrBlock).statements.filterIsInstance<IrFunctionReference>().single()
-            rememberClosure(irReference, parameterType, irValueParameter) as IrExpressionLambdaImpl
-        } else {
-            putValueOnStack(argumentExpression, parameterType, irValueParameter.index, blockInfo, irValueParameter.type)
+            val irReference = (argumentExpression as IrBlock).statements.filterIsInstance<IrFunctionReference>().singleOrNull()
+            if (irReference != null) {
+                rememberClosure(irReference, parameterType, irValueParameter) as IrExpressionLambdaImpl
+                return
+            }
         }
+        putValueOnStack(argumentExpression, parameterType, irValueParameter.index, blockInfo, irValueParameter.type)
     }
 
     override fun putValueIfNeeded(
