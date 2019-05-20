@@ -10,9 +10,41 @@ import org.jetbrains.kotlin.ir.declarations.IrClass
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
 import org.jetbrains.kotlin.ir.symbols.IrClassSymbol
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
-import org.jetbrains.kotlin.ir.types.IrType
-import org.jetbrains.kotlin.ir.types.classOrNull
-import org.jetbrains.kotlin.ir.types.classifierOrNull
+import org.jetbrains.kotlin.ir.types.*
+import org.jetbrains.kotlin.ir.types.impl.IrSimpleTypeImpl
+import org.jetbrains.kotlin.ir.types.impl.IrStarProjectionImpl
+import org.jetbrains.kotlin.ir.util.isNullable
+
+/**
+ * Perform as much type erasure as is significant for JVM signature generation.
+ * Class types are kept as is, while type parameters are replaced with their
+ * erased upper bounds, keeping the nullability information.
+ *
+ * For example, a type parameter `T?` where `T : Any`, `T : Comparable<T>` is
+ * erased to `Any?`.
+ *
+ * Type arguments to the erased upper bound are replaced by `*`, since
+ * recursive erasure could loop. For example, a type parameter
+ * `T : Comparable<T>` is replaced by `Comparable<*>`.
+ */
+fun IrType.eraseTypeParameters() = when (this) {
+    is IrErrorType -> this
+    is IrSimpleType ->
+        when (val owner = classifier.owner) {
+            is IrClass -> this
+            is IrTypeParameter -> {
+                val upperBound = owner.erasedUpperBound
+                IrSimpleTypeImpl(
+                    upperBound.symbol,
+                    isNullable(),
+                    List(upperBound.typeParameters.size) { IrStarProjectionImpl },    // Should not affect JVM signature, but may result in an invalid type object
+                    owner.annotations
+                )
+            }
+            else -> error("Unknown IrSimpleType classifier kind: $owner")
+        }
+    else -> error("Unknown IrType kind: $this")
+}
 
 /**
  * Computes the erased class for this type parameter according to the java erasure rules.
