@@ -29,18 +29,15 @@ import com.intellij.util.containers.SLRUMap
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jetbrains.kotlin.idea.core.util.EDT
-import org.jetbrains.kotlin.scripting.resolve.RefinementResults
-import org.jetbrains.kotlin.scripting.resolve.VirtualFileScriptSource
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.write
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 import kotlin.reflect.jvm.isAccessible
-import kotlin.script.experimental.dependencies.ScriptDependencies
 
-// TODO: rename and provide alias for compatibility - this is not only about dependencies anymore
-class ScriptDependenciesCache(private val project: Project) {
+class ScriptsCompilationConfigurationCache(private val project: Project) {
 
     companion object {
         const val MAX_SCRIPTS_CACHED = 50
@@ -51,10 +48,7 @@ class ScriptDependenciesCache(private val project: Project) {
     private val scriptDependenciesCache = SLRUCacheWithLock<RefinementResults>()
     private val scriptsModificationStampsCache = SLRUCacheWithLock<Long>()
 
-    @Deprecated("Migrating to configuration refinement")
-    operator fun get(virtualFile: VirtualFile): ScriptDependencies? = scriptDependenciesCache.get(virtualFile)?.scriptDependencies
-
-    fun getRefinementResults(virtualFile: VirtualFile): RefinementResults? = scriptDependenciesCache.get(virtualFile)
+    operator fun get(virtualFile: VirtualFile): ScriptCompilationConfigurationWrapper? = cache.get(virtualFile)
 
     fun shouldRunDependenciesUpdate(file: VirtualFile): Boolean {
         return scriptsModificationStampsCache.replace(file, file.modificationStamp) != file.modificationStamp
@@ -64,10 +58,10 @@ class ScriptDependenciesCache(private val project: Project) {
 
     fun getScriptClasspathScope(file: VirtualFile): GlobalSearchScope {
         return scriptsClasspathScopes.getOrPut(file) {
-            val refinementResults = scriptDependenciesCache.get(file) ?: return@getOrPut GlobalSearchScope.EMPTY_SCOPE
-            val roots = refinementResults.dependenciesClassPath
+            val compilationConfiguration = cache.get(file) ?: return@getOrPut GlobalSearchScope.EMPTY_SCOPE
+            val roots = compilationConfiguration.dependenciesClassPath
 
-            val sdk = ScriptDependenciesManager.getScriptSdk(refinementResults)
+            val sdk = ScriptDependenciesManager.getScriptSdk(compilationConfiguration)
 
             @Suppress("FoldInitializerAndIfToElvis")
             if (sdk == null) {
@@ -146,18 +140,10 @@ class ScriptDependenciesCache(private val project: Project) {
         }
     }
 
-    @Deprecated("Migrating to configuration refinement")
-    fun hasNotCachedRoots(scriptDependencies: ScriptDependencies): Boolean {
-        return !allSdks.contains(ScriptDependenciesManager.getScriptSdk(scriptDependencies)) ||
-                !allDependenciesClassFiles.containsAll(ScriptDependenciesManager.toVfsRoots(scriptDependencies.classpath)) ||
-                !allDependenciesSources.containsAll(ScriptDependenciesManager.toVfsRoots(scriptDependencies.sources))
-
-    }
-
-    fun hasNotCachedRoots(refinementResults: RefinementResults): Boolean {
-        return !allScriptsClasspath.containsAll(ScriptDependenciesManager.toVfsRoots(refinementResults.dependenciesClassPath)) ||
-                !allScriptsSdks.contains(ScriptDependenciesManager.getScriptSdk(refinementResults)) ||
-                !allLibrarySources.containsAll(ScriptDependenciesManager.toVfsRoots(refinementResults.dependenciesSources))
+    fun hasNotCachedRoots(compilationConfiguration: ScriptCompilationConfigurationWrapper): Boolean {
+        return !allScriptsClasspath.containsAll(ScriptDependenciesManager.toVfsRoots(compilationConfiguration.dependenciesClassPath)) ||
+                !allScriptsSdks.contains(ScriptDependenciesManager.getScriptSdk(compilationConfiguration)) ||
+                !allLibrarySources.containsAll(ScriptDependenciesManager.toVfsRoots(compilationConfiguration.dependenciesSources))
     }
 
     fun clear() {
@@ -168,12 +154,8 @@ class ScriptDependenciesCache(private val project: Project) {
         onChange(keys)
     }
 
-    @Deprecated("migrating to new configuration refinement")
-    fun save(virtualFile: VirtualFile, new: ScriptDependencies): Boolean =
-        save(virtualFile, RefinementResults.FromLegacy(VirtualFileScriptSource(virtualFile), new))
-
-    fun save(virtualFile: VirtualFile, new: RefinementResults): Boolean {
-        val old = scriptDependenciesCache.replace(virtualFile, new)
+    fun save(virtualFile: VirtualFile, new: ScriptCompilationConfigurationWrapper): Boolean {
+        val old = cache.put(virtualFile, new)
         val changed = new != old
         if (changed) {
             onChange(listOf(virtualFile))
@@ -183,7 +165,7 @@ class ScriptDependenciesCache(private val project: Project) {
     }
 
     fun delete(virtualFile: VirtualFile): Boolean {
-        val changed = scriptDependenciesCache.remove(virtualFile)
+        val changed = cache.remove(virtualFile)
         if (changed) {
             onChange(listOf(virtualFile))
         }
@@ -224,8 +206,8 @@ private class SLRUCacheWithLock<T> {
     private val lock = ReentrantReadWriteLock()
 
     val cache = SLRUMap<VirtualFile, T>(
-        ScriptDependenciesCache.MAX_SCRIPTS_CACHED,
-        ScriptDependenciesCache.MAX_SCRIPTS_CACHED
+        ScriptsCompilationConfigurationCache.MAX_SCRIPTS_CACHED,
+        ScriptsCompilationConfigurationCache.MAX_SCRIPTS_CACHED
     )
 
     fun get(value: VirtualFile): T? = lock.write {

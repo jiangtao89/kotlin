@@ -30,9 +30,8 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.idea.caches.project.getAllProjectSdks
 import org.jetbrains.kotlin.idea.core.script.dependencies.SyncScriptDependenciesLoader
 import org.jetbrains.kotlin.scripting.definitions.ScriptDependenciesProvider
-import org.jetbrains.kotlin.scripting.resolve.RefinementResults
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
 import java.io.File
-import kotlin.script.experimental.dependencies.ScriptDependencies
 
 
 // NOTE: this service exists exclusively because ScriptDependencyManager
@@ -40,23 +39,21 @@ import kotlin.script.experimental.dependencies.ScriptDependencies
 class IdeScriptDependenciesProvider(
     private val scriptDependenciesManager: ScriptDependenciesManager
 ) : ScriptDependenciesProvider {
-    override fun getRefinementResults(file: VirtualFile): RefinementResults? = scriptDependenciesManager.getScriptRefinementResults(file)
+    override fun getScriptRefinedCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? = scriptDependenciesManager.getRefinedCompilationConfiguration(file)
 }
 
 // TODO: rename and provide alias for compatibility - this is not only about dependencies anymore
 class ScriptDependenciesManager internal constructor(
-    private val cacheUpdater: ScriptDependenciesUpdater,
-    private val cache: ScriptDependenciesCache
+    private val cacheUpdater: ScriptsCompilationConfigurationUpdater,
+    private val cache: ScriptsCompilationConfigurationCache
 ) {
     fun getScriptClasspath(file: VirtualFile): List<VirtualFile> =
-        toVfsRoots(cacheUpdater.getCurrentRefinementResults(file)?.dependenciesClassPath.orEmpty())
+        toVfsRoots(cacheUpdater.getCurrentCompilationConfiguration(file)?.dependenciesClassPath.orEmpty())
 
-    @Deprecated("Migrating to configuration refinement", level = DeprecationLevel.ERROR)
-    fun getScriptDependencies(file: VirtualFile): ScriptDependencies = cacheUpdater.getCurrentDependencies(file)
+    fun getRefinedCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? =
+        cacheUpdater.getCurrentCompilationConfiguration(file)
 
-    fun getScriptRefinementResults(file: VirtualFile): RefinementResults? = cacheUpdater.getCurrentRefinementResults(file)
-
-    fun getScriptSdk(file: VirtualFile): Sdk? = Companion.getScriptSdk(getScriptRefinementResults(file))
+    fun getScriptSdk(file: VirtualFile): Sdk? = Companion.getScriptSdk(getRefinedCompilationConfiguration(file))
 
     fun getScriptDependenciesClassFilesScope(file: VirtualFile) = cache.scriptDependenciesClassFilesScope(file)
 
@@ -73,41 +70,10 @@ class ScriptDependenciesManager internal constructor(
         fun getInstance(project: Project): ScriptDependenciesManager =
             ServiceManager.getService(project, ScriptDependenciesManager::class.java)
 
-        @Deprecated("migrating to new configuration refinement")
-        fun getScriptSdk(dependencies: ScriptDependencies): Sdk? {
-            // workaround for mismatched gradle wrapper and plugin version
-            try {
-                val javaHome = dependencies.javaHome
-                    ?.let { VfsUtil.findFileByIoFile(it, true) }
-                    ?: return null
-
-                return getAllProjectSdks().find { it.homeDirectory == javaHome }
-            } catch (e: Throwable) {
-                return null
-            }
-        }
-
-        fun getScriptDefaultSdk(project: Project): Sdk? {
-            val projectSdk = getProjectSdk(project)
-            if (projectSdk != null) return projectSdk
-
-            val anyJavaSdk = getAllProjectSdks().find { it.canBeUsedForScript() }
-            if (anyJavaSdk != null) {
-                return anyJavaSdk
-            }
-
-            log.warn(
-                "Default Script SDK is null: " +
-                        "projectSdk = ${ProjectRootManager.getInstance(project).projectSdk}, " +
-                        "all sdks = ${getAllProjectSdks().joinToString("\n")}"
-            )
-            return null
-        }
-
-        fun getScriptSdk(refinementResults: RefinementResults?): Sdk? {
+        fun getScriptSdk(compilationConfiguration: ScriptCompilationConfigurationWrapper?): Sdk? {
             // workaround for mismatched gradle wrapper and plugin version
             val javaHome = try {
-                refinementResults?.javaHome?.canonicalPath
+                compilationConfiguration?.javaHome?.canonicalPath
             } catch (e: Throwable) {
                 null
             }
