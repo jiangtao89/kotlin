@@ -55,7 +55,7 @@ abstract class AbstractKotlinUastTest : AbstractUastTest() {
 
         val environment = kotlinCoreEnvironment!!
         TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
-                project, environment.getSourceFiles(), trace, compilerConfiguration, environment::createPackagePartProvider
+            project, environment.getSourceFiles(), trace, compilerConfiguration, environment::createPackagePartProvider
         )
 
         val vfs = VirtualFileManager.getInstance().getFileSystem(URLUtil.FILE_PROTOCOL)
@@ -69,13 +69,14 @@ abstract class AbstractKotlinUastTest : AbstractUastTest() {
     private fun initializeKotlinEnvironment() {
         val area = Extensions.getRootArea()
         area.getExtensionPoint(UastLanguagePlugin.extensionPointName)
-                .registerExtension(KotlinUastLanguagePlugin())
+            .registerExtension(KotlinUastLanguagePlugin())
         area.getExtensionPoint(UEvaluatorExtension.EXTENSION_POINT_NAME)
-                .registerExtension(KotlinEvaluatorExtension())
+            .registerExtension(KotlinEvaluatorExtension())
 
         project.registerService(
             KotlinUastResolveProviderService::class.java,
-            CliKotlinUastResolveProviderService::class.java)
+            CliKotlinUastResolveProviderService::class.java
+        )
     }
 
     override fun createEnvironment(source: File): AbstractCoreEnvironment {
@@ -83,14 +84,16 @@ abstract class AbstractKotlinUastTest : AbstractUastTest() {
         compilerConfiguration = createKotlinCompilerConfiguration(source)
         val parentDisposable = Disposer.newDisposable()
         val kotlinCoreEnvironment = KotlinCoreEnvironment.createForTests(
-                parentDisposable,
-                compilerConfiguration,
-                EnvironmentConfigFiles.JVM_CONFIG_FILES)
+            parentDisposable,
+            compilerConfiguration,
+            EnvironmentConfigFiles.JVM_CONFIG_FILES
+        )
 
         this.kotlinCoreEnvironment = kotlinCoreEnvironment
 
         AnalysisHandlerExtension.registerExtension(
-                kotlinCoreEnvironment.project, UastAnalysisHandlerExtension())
+            kotlinCoreEnvironment.project, UastAnalysisHandlerExtension()
+        )
 
         return KotlinCoreEnvironmentWrapper(kotlinCoreEnvironment, parentDisposable, appWasNull)
     }
@@ -115,9 +118,11 @@ abstract class AbstractKotlinUastTest : AbstractUastTest() {
         }
     }
 
-    private class KotlinCoreEnvironmentWrapper(val environment: KotlinCoreEnvironment,
-                                               val parentDisposable: Disposable,
-                                               val appWasNull: Boolean) : AbstractCoreEnvironment() {
+    private class KotlinCoreEnvironmentWrapper(
+        val environment: KotlinCoreEnvironment,
+        val parentDisposable: Disposable,
+        val appWasNull: Boolean
+    ) : AbstractCoreEnvironment() {
         override fun addJavaSourceRoot(root: File) {
             TODO("not implemented")
         }
