@@ -40,7 +40,7 @@ buildscript {
         val ultimateEnabled = findProperty("cidrPluginsEnabled")?.toString()?.toBoolean()
             ?: findProperty("intellijUltimateEnabled")?.toString()?.toBoolean()
             ?: hasProperty("teamcity") || System.getenv("TEAMCITY_VERSION") != null         
-        if (ultimateEnabled) {
+        if (ultimateEnabled && file("kotlin-ultimate").exists()) {
             logger.info("Adding buildscript classpath dependency \"$kotlinUltimateBuildSrcDep\" in build.gradle.kts")
             classpath(kotlinUltimateBuildSrcDep)
         } else {

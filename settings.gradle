@@ -215,10 +215,11 @@ include ":kotlin-build-common",
         ":kotlin-serialization-unshaded",
         ":kotlin-serialization:plugin-marker"
 
+def hasKU = file("kotlin-ultimate").exists()
 def isTeamcityBuild = hasProperty("teamcity") || System.getenv("TEAMCITY_VERSION") != null
 def includeUltimate = hasProperty("intellijUltimateEnabled") && Boolean.parseBoolean(intellijUltimateEnabled)
 def includeCidr = hasProperty("cidrPluginsEnabled") && Boolean.parseBoolean(cidrPluginsEnabled)
-if (isTeamcityBuild || includeCidr || includeUltimate) {
+if (hasKU && (isTeamcityBuild || includeCidr || includeUltimate)) {
     logger.info("Including :kotlin-ultimate in settings.gradle")
     includeBuild "kotlin-ultimate/buildSrc"
     include ":kotlin-ultimate:ide:cidr-native",
