@@ -18,6 +18,7 @@ import java.util.jar.JarFile
 import kotlin.reflect.KClass
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.host.BasicScriptingHost
+import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.FileScriptSource
 import kotlin.script.experimental.host.toScriptSource
 import kotlin.script.experimental.jvm.BasicJvmScriptEvaluator
@@ -463,7 +464,7 @@ private fun ScriptCompilationConfiguration.Builder.makeSimpleConfigurationWithTe
     refineConfiguration {
         beforeCompiling { ctx ->
             val importedScript = File(ScriptingHostTest.TEST_DATA_DIR, "importTest/helloWithVal.kts")
-            if ((ctx.script as? FileScriptSource)?.file?.canonicalFile == importedScript.canonicalFile) {
+            if ((ctx.script as? FileBasedScriptSource)?.file?.canonicalFile == importedScript.canonicalFile) {
                 ctx.compilationConfiguration
             } else {
                 ScriptCompilationConfiguration(ctx.compilationConfiguration) {

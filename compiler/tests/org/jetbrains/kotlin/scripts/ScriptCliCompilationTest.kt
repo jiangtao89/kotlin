@@ -26,6 +26,7 @@ import java.io.File
 import kotlin.reflect.KClass
 import kotlin.script.experimental.annotations.KotlinScript
 import kotlin.script.experimental.api.*
+import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.FileScriptSource
 import kotlin.script.experimental.host.ScriptingHostConfiguration
 import kotlin.script.experimental.host.configurationDependencies
@@ -116,7 +117,7 @@ object TestScriptWithRequireConfiguration : ScriptCompilationConfiguration(
         }
         refineConfiguration {
             onAnnotations(Import::class, DependsOn::class) { context: ScriptConfigurationRefinementContext ->
-                val scriptBaseDir = (context.script as? FileScriptSource)?.file?.parentFile
+                val scriptBaseDir = (context.script as? FileBasedScriptSource)?.file?.parentFile
                 val sources = context.collectedData?.get(ScriptCollectedData.foundAnnotations)
                     ?.flatMap {
                         (it as? Import)?.sources?.map { sourceName ->

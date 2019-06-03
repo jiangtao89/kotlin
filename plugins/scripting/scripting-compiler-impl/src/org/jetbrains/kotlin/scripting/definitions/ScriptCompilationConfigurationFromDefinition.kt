@@ -10,6 +10,7 @@ import kotlin.script.dependencies.Environment
 import kotlin.script.dependencies.ScriptContents
 import kotlin.script.experimental.api.*
 import kotlin.script.experimental.dependencies.DependenciesResolver
+import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.FileScriptSource
 import kotlin.script.experimental.host.ScriptingHostConfiguration
 import kotlin.script.experimental.host.ScriptingHostConfigurationKeys
@@ -75,7 +76,7 @@ class ScriptCompilationConfigurationFromDefinition(
 
 private class ScriptContentsFromRefinementContext(val context: ScriptConfigurationRefinementContext) : ScriptContents {
     override val file: File?
-        get() = (context.script as? FileScriptSource)?.file
+        get() = (context.script as? FileBasedScriptSource)?.file
     override val annotations: Iterable<Annotation>
         get() = context.collectedData?.get(ScriptCollectedData.foundAnnotations) ?: emptyList()
     override val text: CharSequence?

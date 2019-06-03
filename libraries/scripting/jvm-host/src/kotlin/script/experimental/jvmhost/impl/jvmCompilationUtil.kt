@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.scripting.resolve.ScriptLightVirtualFile
 import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import java.util.*
 import kotlin.script.experimental.api.*
+import kotlin.script.experimental.host.FileBasedScriptSource
 import kotlin.script.experimental.host.FileScriptSource
 import kotlin.script.experimental.host.getMergedScriptText
 import kotlin.script.experimental.jvm.impl.KJvmCompiledScript
@@ -85,7 +86,7 @@ internal fun getScriptKtFile(
     val scriptText = getMergedScriptText(script, scriptCompilationConfiguration)
     val virtualFile = ScriptLightVirtualFile(
         script.scriptFileName(script, scriptCompilationConfiguration),
-        (script as? FileScriptSource)?.file?.path,
+        (script as? FileBasedScriptSource)?.file?.path,
         scriptText
     )
     val ktFile = psiFileFactory.trySetupPsiForFile(virtualFile, KotlinLanguage.INSTANCE, true, false) as KtFile?

@@ -27,10 +27,7 @@ import kotlin.script.experimental.api.*
 import kotlin.script.experimental.dependencies.AsyncDependenciesResolver
 import kotlin.script.experimental.dependencies.DependenciesResolver
 import kotlin.script.experimental.dependencies.ScriptDependencies
-import kotlin.script.experimental.host.FileScriptSource
-import kotlin.script.experimental.host.ScriptingHostConfiguration
-import kotlin.script.experimental.host.getMergedScriptText
-import kotlin.script.experimental.host.getScriptingClass
+import kotlin.script.experimental.host.*
 import kotlin.script.experimental.jvm.JvmGetScriptingClass
 import kotlin.script.experimental.jvm.compat.mapToDiagnostics
 import kotlin.script.experimental.jvm.defaultJvmScriptingHostConfiguration
@@ -60,17 +57,19 @@ internal fun VirtualFile.getAnnotationEntries(project: Project): Iterable<KtAnno
 /**
  * The implementation of the SourceCode for a script located in a virtual file
  */
-open class VirtualFileScriptSource(val file: VirtualFile, private val preloadedText: String? = null) :
-    ExternalSourceCode {
-    override val externalLocation: URL get() = URL(file.url)
-    override val text: String by lazy { preloadedText ?: file.inputStream.bufferedReader().readText() }
-    override val name: String? get() = file.name
-    override val locationId: String? get() = file.path
+open class VirtualFileScriptSource(val virtualFile: VirtualFile, private val preloadedText: String? = null) :
+    FileBasedScriptSource()
+{
+    override val file: File get() = File(virtualFile.path)
+    override val externalLocation: URL get() = URL(virtualFile.url)
+    override val text: String by lazy { preloadedText ?: virtualFile.inputStream.bufferedReader().readText() }
+    override val name: String? get() = virtualFile.name
+    override val locationId: String? get() = virtualFile.path
 
     override fun equals(other: Any?): Boolean =
-        this === other || (other as? VirtualFileScriptSource)?.let { file == it.file } == true
+        this === other || (other as? VirtualFileScriptSource)?.let { virtualFile == it.virtualFile } == true
 
-    override fun hashCode(): Int = file.hashCode()
+    override fun hashCode(): Int = virtualFile.hashCode()
 }
 
 /**
@@ -146,7 +145,7 @@ abstract class ScriptCompilationConfigurationWrapper(val script: SourceCode) {
 
         override val importedScripts: List<File>
             get() = configuration?.get(ScriptCompilationConfiguration.importScripts)
-                ?.mapNotNull { (it as? FileScriptSource)?.file }.orEmpty()
+                ?.mapNotNull { (it as? FileBasedScriptSource)?.file }.orEmpty()
 
         override val legacyDependencies: ScriptDependencies?
             get() = configuration?.toDependencies(dependenciesClassPath)
@@ -257,7 +256,7 @@ internal fun makeScriptContents(
         })
 
 fun SourceCode.getVirtualFile(definition: ScriptDefinition): VirtualFile {
-    if (this is VirtualFileScriptSource) return file
+    if (this is VirtualFileScriptSource) return virtualFile
     if (this is KtFileScriptSource) {
         val vFile = virtualFile
         if (vFile != null) return vFile
