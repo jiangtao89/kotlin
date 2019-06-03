@@ -45,8 +45,8 @@ abstract class ScriptDependenciesLoader(protected val project: Project) {
         if (oldResult == null) {
             compilationConfiguration?.let {
                 save(it, file)
-                attachReportsIfChanged(result, file)
             }
+            attachReportsIfChanged(result, file)
             return
         }
 

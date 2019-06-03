@@ -230,7 +230,7 @@ fun refineScriptCompilationConfiguration(
                 resolver.resolve(scriptContents, environment)
             }
         } catch (e: Throwable) {
-            return makeFailureResult(e.asDiagnostics())
+            return makeFailureResult(e.asDiagnostics(severity = ScriptDiagnostic.Severity.FATAL))
         }
         return if (result is DependenciesResolver.ResolveResult.Failure)
             makeFailureResult(

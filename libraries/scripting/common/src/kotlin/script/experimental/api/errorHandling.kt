@@ -162,9 +162,10 @@ fun makeFailureResult(message: String, path: String? = null, location: SourceCod
 fun Throwable.asDiagnostics(
     customMessage: String? = null,
     path: String? = null,
-    location: SourceCode.Location? = null
+    location: SourceCode.Location? = null,
+    severity: ScriptDiagnostic.Severity = ScriptDiagnostic.Severity.ERROR
 ): ScriptDiagnostic =
-    ScriptDiagnostic(customMessage ?: message ?: "$this", ScriptDiagnostic.Severity.ERROR, path, location, this)
+    ScriptDiagnostic(customMessage ?: message ?: "$this", severity, path, location, this)
 
 /**
  * Converts the receiver String to error diagnostic report with optional [path] and [location]
