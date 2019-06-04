@@ -5,13 +5,20 @@
 
 package org.jetbrains.kotlin.fir.expressions
 
+import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.BaseTransformedType
+import org.jetbrains.kotlin.fir.FirElement
+import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.transformInplace
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
 
 @BaseTransformedType
-interface FirCall : FirExpression {
-    val arguments: List<FirExpression>
+abstract class FirCall(
+    session: FirSession,
+    psi: PsiElement?
+) : FirExpression(session, psi) {
+    val arguments = mutableListOf<FirExpression>()
 
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
         visitor.visitCall(this, data)
@@ -23,5 +30,14 @@ interface FirCall : FirExpression {
         super.acceptChildren(visitor, data)
     }
 
-    fun <D> transformArguments(transformer: FirTransformer<D>, data: D): FirCall
+    override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
+        arguments.transformInplace(transformer, data)
+        return super.transformChildren(transformer, data)
+    }
+
+    fun <D> transformArguments(transformer: FirTransformer<D>, data: D): FirCall {
+        arguments.transformInplace(transformer, data)
+        return this
+    }
+
 }

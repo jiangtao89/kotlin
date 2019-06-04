@@ -6,7 +6,7 @@
 package org.jetbrains.kotlin.fir.declarations.impl
 
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.fir.FirAbstractElement
+import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirEmptyExpressionBlock
@@ -17,7 +17,7 @@ class FirErrorLoop(
     session: FirSession,
     psi: PsiElement?,
     override val reason: String
-) : FirAbstractElement(session, psi), FirErrorStatement, FirLoop {
+) : FirElement(session, psi), FirErrorStatement, FirLoop {
     override val annotations: List<FirAnnotationCall> = listOf()
 
     override val condition: FirExpression = FirErrorExpressionImpl(session, psi, reason)

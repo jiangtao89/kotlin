@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirReference
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.expressions.FirCall
 import org.jetbrains.kotlin.fir.expressions.FirDelegatedConstructorCall
 import org.jetbrains.kotlin.fir.expressions.FirQualifiedAccess
 import org.jetbrains.kotlin.fir.references.FirExplicitSuperReference
@@ -23,7 +24,7 @@ class FirDelegatedConstructorCallImpl(
     psi: PsiElement?,
     override var constructedTypeRef: FirTypeRef,
     override val isThis: Boolean
-) : FirAbstractCall(session, psi), FirDelegatedConstructorCall {
+) : FirCall(session, psi), FirDelegatedConstructorCall {
     override var calleeReference: FirReference =
         if (isThis) FirExplicitThisReference(session, psi, null) else FirExplicitSuperReference(session, psi, constructedTypeRef)
 
@@ -36,7 +37,7 @@ class FirDelegatedConstructorCallImpl(
         constructedTypeRef = constructedTypeRef.transformSingle(transformer, data)
         calleeReference = calleeReference.transformSingle(transformer, data)
 
-        return super<FirAbstractCall>.transformChildren(transformer, data)
+        return super<FirCall>.transformChildren(transformer, data)
     }
 
     override fun <D> transformExplicitReceiver(transformer: FirTransformer<D>, data: D): FirQualifiedAccess {

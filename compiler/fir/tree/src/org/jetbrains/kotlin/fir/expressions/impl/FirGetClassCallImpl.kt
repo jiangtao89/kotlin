@@ -7,9 +7,10 @@ package org.jetbrains.kotlin.fir.expressions.impl
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.expressions.FirCall
 import org.jetbrains.kotlin.fir.expressions.FirGetClassCall
 
 class FirGetClassCallImpl(
     session: FirSession,
     psi: PsiElement?
-) : FirAbstractCall(session, psi), FirGetClassCall
+) : FirCall(session, psi), FirGetClassCall

@@ -314,7 +314,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             }
         }
 
-        private fun KtCallElement.extractArgumentsTo(container: FirAbstractCall) {
+        private fun KtCallElement.extractArgumentsTo(container: FirCall) {
             for (argument in this.valueArguments) {
                 val argumentExpression = argument.toFirExpression()
                 container.arguments += when (argument) {
@@ -1044,7 +1044,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
 
         private val firLoops = mutableListOf<FirLoop>()
 
-        private fun FirAbstractLoop.configure(generateBlock: () -> FirBlock): FirAbstractLoop {
+        private fun FirLoop.configure(generateBlock: () -> FirBlock): FirLoop {
             label = firLabels.pop()
             firLoops += this
             block = generateBlock()

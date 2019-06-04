@@ -5,13 +5,20 @@
 
 package org.jetbrains.kotlin.fir.declarations
 
+import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.descriptors.Visibility
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.expressions.FirAnnotationContainer
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
+import org.jetbrains.kotlin.name.Name
 
-interface FirMemberDeclaration : FirTypeParameterContainer, FirNamedDeclaration, FirAnnotationContainer {
-    val status: FirDeclarationStatus
+abstract class FirMemberDeclaration(
+    session: FirSession,
+    psi: PsiElement?,
+    name: Name
+) : FirTypeParameterContainer, FirNamedDeclaration(session, psi, name), FirAnnotationContainer {
+    abstract val status: FirDeclarationStatus
 
     val visibility: Visibility get() = status.visibility
 

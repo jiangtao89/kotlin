@@ -5,10 +5,15 @@
 
 package org.jetbrains.kotlin.fir.expressions
 
+import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
 
-interface FirBlock : FirExpression {
-    val statements: List<FirStatement>
+abstract class FirBlock(
+    session: FirSession,
+    psi: PsiElement?
+) : FirExpression(session, psi) {
+    abstract val statements: List<FirStatement>
 
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
         visitor.visitBlock(this, data)
@@ -17,7 +22,6 @@ interface FirBlock : FirExpression {
         for (statement in statements) {
             statement.accept(visitor, data)
         }
-        typeRef.accept(visitor, data)
         super.acceptChildren(visitor, data)
     }
 }

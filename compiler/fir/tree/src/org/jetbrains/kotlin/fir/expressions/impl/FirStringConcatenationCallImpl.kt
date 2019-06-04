@@ -7,6 +7,7 @@ package org.jetbrains.kotlin.fir.expressions.impl
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.expressions.FirCall
 import org.jetbrains.kotlin.fir.expressions.FirStringConcatenationCall
 import org.jetbrains.kotlin.fir.types.FirTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitStringTypeRef
@@ -14,6 +15,6 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitStringTypeRef
 class FirStringConcatenationCallImpl(
     session: FirSession,
     psi: PsiElement?
-) : FirAbstractCall(session, psi), FirStringConcatenationCall {
+) : FirCall(session, psi), FirStringConcatenationCall {
     override var typeRef: FirTypeRef = FirImplicitStringTypeRef(session, psi)
 }

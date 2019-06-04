@@ -5,15 +5,26 @@
 
 package org.jetbrains.kotlin.fir.expressions
 
+import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirResolvedCallableReference
+import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.symbols.ConeCallableSymbol
+import org.jetbrains.kotlin.fir.transformSingle
 import org.jetbrains.kotlin.fir.types.FirTypeRef
+import org.jetbrains.kotlin.fir.types.impl.FirImplicitTypeRefImpl
+import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
 
-interface FirExpression : FirStatement {
-    val typeRef: FirTypeRef
+abstract class FirExpression(
+    session: FirSession,
+    psi: PsiElement?
+) : FirStatement(session, psi) {
+    open var typeRef: FirTypeRef = FirImplicitTypeRefImpl(session, null)
 
-    fun replaceTypeRef(newTypeRef: FirTypeRef)
+    open fun replaceTypeRef(newTypeRef: FirTypeRef) {
+        typeRef = newTypeRef
+    }
 
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
         visitor.visitExpression(this, data)
@@ -21,6 +32,12 @@ interface FirExpression : FirStatement {
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
         super.acceptChildren(visitor, data)
         typeRef.accept(visitor, data)
+    }
+
+    override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
+        typeRef = typeRef.transformSingle(transformer, data)
+
+        return super.transformChildren(transformer, data)
     }
 }
 

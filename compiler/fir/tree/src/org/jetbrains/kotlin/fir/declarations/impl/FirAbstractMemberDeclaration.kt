@@ -21,7 +21,7 @@ abstract class FirAbstractMemberDeclaration(
     session: FirSession,
     psi: PsiElement?,
     name: Name
-) : FirAbstractNamedAnnotatedDeclaration(session, psi, name), FirMemberDeclaration {
+) : FirMemberDeclaration(session, psi, name) {
     constructor(
         session: FirSession,
         psi: PsiElement?,
@@ -49,6 +49,6 @@ abstract class FirAbstractMemberDeclaration(
         typeParameters.transformInplace(transformer, data)
         status = status.transformSingle(transformer, data)
 
-        return super<FirAbstractNamedAnnotatedDeclaration>.transformChildren(transformer, data)
+        return super.transformChildren(transformer, data)
     }
 }

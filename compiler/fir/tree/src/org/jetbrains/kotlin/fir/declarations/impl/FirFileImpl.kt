@@ -20,7 +20,7 @@ class FirFileImpl(
     psi: PsiElement?,
     override val name: String,
     override val packageFqName: FqName
-) : FirAbstractAnnotatedDeclaration(session, psi), FirFile {
+) : FirDeclaration(session, psi), FirFile {
     override val imports = mutableListOf<FirImport>()
 
     override val declarations = mutableListOf<FirDeclaration>()
@@ -28,6 +28,6 @@ class FirFileImpl(
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         imports.transformInplace(transformer, data)
         declarations.transformInplace(transformer, data)
-        return super<FirAbstractAnnotatedDeclaration>.transformChildren(transformer, data)
+        return super<FirDeclaration>.transformChildren(transformer, data)
     }
 }

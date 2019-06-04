@@ -7,12 +7,13 @@ package org.jetbrains.kotlin.fir.expressions.impl
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.types.FirTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitUnitTypeRef
 
 class FirUnitExpression(
     session: FirSession,
     psi: PsiElement?
-) : FirAbstractExpression(session, psi) {
+) : FirExpression(session, psi) {
     override var typeRef: FirTypeRef = FirImplicitUnitTypeRef(session, psi)
 }

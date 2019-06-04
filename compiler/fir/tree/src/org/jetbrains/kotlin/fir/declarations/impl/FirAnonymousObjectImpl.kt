@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.fir.visitors.FirVisitor
 class FirAnonymousObjectImpl(
     session: FirSession,
     psi: PsiElement?
-) : FirAbstractAnnotatedDeclaration(session, psi), FirAnonymousObject, FirModifiableClass {
+) : FirDeclaration(session, psi), FirAnonymousObject, FirModifiableClass {
     override var typeRef: FirTypeRef = FirImplicitTypeRefImpl(session, null)
 
     override val superTypeRefs = mutableListOf<FirTypeRef>()
@@ -40,6 +40,6 @@ class FirAnonymousObjectImpl(
         superTypeRefs.transformInplace(transformer, data)
         declarations.transformInplace(transformer, data)
 
-        return super<FirAbstractAnnotatedDeclaration>.transformChildren(transformer, data)
+        return super<FirDeclaration>.transformChildren(transformer, data)
     }
 }

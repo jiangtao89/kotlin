@@ -12,19 +12,18 @@ import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.expressions.FirReturnExpression
 import org.jetbrains.kotlin.fir.types.FirTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitNothingTypeRef
-import org.jetbrains.kotlin.fir.types.impl.FirImplicitUnitTypeRef
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
 
 class FirReturnExpressionImpl(
     session: FirSession,
     psi: PsiElement?,
     override var result: FirExpression
-) : FirAbstractExpression(session, psi), FirReturnExpression {
+) : FirExpression(session, psi), FirReturnExpression {
     override lateinit var target: FirTarget<FirFunction>
 
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         result = result.transformSingle(transformer, data)
-        return super<FirAbstractExpression>.transformChildren(transformer, data)
+        return super<FirExpression>.transformChildren(transformer, data)
     }
 
     override var typeRef: FirTypeRef = FirImplicitNothingTypeRef(session, psi)

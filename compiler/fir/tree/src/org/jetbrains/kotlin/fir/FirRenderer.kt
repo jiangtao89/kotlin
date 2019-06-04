@@ -466,10 +466,6 @@ class FirRenderer(builder: StringBuilder) : FirVisitorVoid() {
         }
     }
 
-    override fun visitTypedDeclaration(typedDeclaration: FirTypedDeclaration) {
-        visitDeclaration(typedDeclaration)
-    }
-
     override fun visitValueParameter(valueParameter: FirValueParameter) {
         valueParameter.annotations.renderAnnotations()
         if (valueParameter.isCrossinline) {
