@@ -14,4 +14,4 @@ class FirOperatorCallImpl(
     session: FirSession,
     psi: PsiElement?,
     operation: FirOperation
-) : FirAbstractOperationBasedCall(session, psi, operation), FirOperatorCall
+) : FirAbstractOperationBasedCall(session, psi, operation)

@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.expressions.FirCall
 import org.jetbrains.kotlin.fir.expressions.FirOperation
+import org.jetbrains.kotlin.fir.expressions.FirOperatorCall
 import org.jetbrains.kotlin.fir.types.FirTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitBooleanTypeRef
 import org.jetbrains.kotlin.fir.types.impl.FirImplicitTypeRefImpl
@@ -16,11 +17,15 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitTypeRefImpl
 abstract class FirAbstractOperationBasedCall(
     session: FirSession,
     psi: PsiElement?,
-    val operation: FirOperation
-) : FirCall(session, psi) {
+    final override val operation: FirOperation
+) : FirOperatorCall(session, psi) {
     override var typeRef: FirTypeRef = if (operation in FirOperation.BOOLEANS) {
         FirImplicitBooleanTypeRef(session, null)
     } else {
         FirImplicitTypeRefImpl(session, null)
+    }
+
+    override fun replaceTypeRef(newTypeRef: FirTypeRef) {
+        typeRef = newTypeRef
     }
 }

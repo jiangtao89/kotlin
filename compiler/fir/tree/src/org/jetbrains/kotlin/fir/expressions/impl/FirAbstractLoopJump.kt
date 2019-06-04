@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitNothingTypeRef
 abstract class FirAbstractLoopJump(
     session: FirSession,
     psi: PsiElement?
-) : FirExpression(session, psi), FirJump<FirLoop> {
+) : FirJump<FirLoop>(session, psi) {
     override lateinit var target: FirTarget<FirLoop>
 
     override var typeRef: FirTypeRef = FirImplicitNothingTypeRef(session, psi)

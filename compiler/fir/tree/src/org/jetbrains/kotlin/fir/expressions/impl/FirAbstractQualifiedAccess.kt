@@ -16,7 +16,7 @@ abstract class FirAbstractQualifiedAccess(
     session: FirSession,
     psi: PsiElement?,
     final override var safe: Boolean = false
-) : FirStatement(session, psi), FirModifiableQualifiedAccess {
+) : FirStatement(session, psi), FirModifiableQualifiedAccess<FirReference> {
     final override lateinit var calleeReference: FirReference
 
     final override var explicitReceiver: FirExpression? = null
@@ -24,16 +24,6 @@ abstract class FirAbstractQualifiedAccess(
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         calleeReference = calleeReference.transformSingle(transformer, data)
         explicitReceiver = explicitReceiver?.transformSingle(transformer, data)
-        return super<FirStatement>.transformChildren(transformer, data)
-    }
-
-    override fun <D> transformCalleeReference(transformer: FirTransformer<D>, data: D): FirQualifiedAccess {
-        calleeReference = calleeReference.transformSingle(transformer, data)
-        return this
-    }
-
-    override fun <D> transformExplicitReceiver(transformer: FirTransformer<D>, data: D): FirQualifiedAccess {
-        explicitReceiver = explicitReceiver?.transformSingle(transformer, data)
-        return this
+        return super.transformChildren(transformer, data)
     }
 }

@@ -13,4 +13,4 @@ import org.jetbrains.kotlin.fir.expressions.FirGetClassCall
 class FirGetClassCallImpl(
     session: FirSession,
     psi: PsiElement?
-) : FirCall(session, psi), FirGetClassCall
+) : FirGetClassCall(session, psi)

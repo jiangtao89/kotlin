@@ -64,6 +64,10 @@ abstract class FirVisitor<out R, in D> {
         return visitFunction(propertyAccessor, data)
     }
 
+    open fun visitDefaultPropertyAccessor(defaultPropertyAccessor: FirDefaultPropertyAccessor, data: D): R {
+        return visitPropertyAccessor(defaultPropertyAccessor, data)
+    }
+
     open fun visitErrorDeclaration(errorDeclaration: FirErrorDeclaration, data: D): R {
         return visitDeclaration(errorDeclaration, data)
     }
@@ -102,10 +106,6 @@ abstract class FirVisitor<out R, in D> {
 
     open fun visitProperty(property: FirProperty, data: D): R {
         return visitDeclaration(property, data)
-    }
-
-    open fun visitTypedDeclaration(typedDeclaration: FirTypedDeclaration, data: D): R {
-        return visitDeclaration(typedDeclaration, data)
     }
 
     open fun visitValueParameter(valueParameter: FirValueParameter, data: D): R {
@@ -316,36 +316,16 @@ abstract class FirVisitor<out R, in D> {
         return visitLoop(whileLoop, data)
     }
 
-    open fun visitQualifiedAccess(qualifiedAccess: FirQualifiedAccess, data: D): R {
-        return visitStatement(qualifiedAccess, data)
-    }
-
-    open fun visitAssignment(assignment: FirAssignment, data: D): R {
-        return visitQualifiedAccess(assignment, data)
-    }
-
     open fun visitVariableAssignment(variableAssignment: FirVariableAssignment, data: D): R {
         return visitAssignment(variableAssignment, data)
     }
 
-    open fun visitModifiableQualifiedAccess(modifiableQualifiedAccess: FirModifiableQualifiedAccess, data: D): R {
-        return visitQualifiedAccess(modifiableQualifiedAccess, data)
-    }
-
     open fun visitQualifiedAccessExpression(qualifiedAccessExpression: FirQualifiedAccessExpression, data: D): R {
-        return visitQualifiedAccess(qualifiedAccessExpression, data)
+        return visitExpression(qualifiedAccessExpression, data)
     }
 
     open fun visitCallableReferenceAccess(callableReferenceAccess: FirCallableReferenceAccess, data: D): R {
         return visitQualifiedAccessExpression(callableReferenceAccess, data)
-    }
-
-    open fun visitTargetElement(targetElement: FirTargetElement, data: D): R {
-        return visitElement(targetElement, data)
-    }
-
-    open fun visitLabeledElement(labeledElement: FirLabeledElement, data: D): R {
-        return visitTargetElement(labeledElement, data)
     }
 
     open fun visitTypeProjection(typeProjection: FirTypeProjection, data: D): R {

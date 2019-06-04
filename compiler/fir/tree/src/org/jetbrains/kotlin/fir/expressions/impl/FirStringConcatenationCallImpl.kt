@@ -15,6 +15,6 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitStringTypeRef
 class FirStringConcatenationCallImpl(
     session: FirSession,
     psi: PsiElement?
-) : FirCall(session, psi), FirStringConcatenationCall {
+) : FirStringConcatenationCall(session, psi) {
     override var typeRef: FirTypeRef = FirImplicitStringTypeRef(session, psi)
 }

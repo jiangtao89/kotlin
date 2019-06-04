@@ -20,11 +20,9 @@ abstract class FirExpression(
     session: FirSession,
     psi: PsiElement?
 ) : FirStatement(session, psi) {
-    open var typeRef: FirTypeRef = FirImplicitTypeRefImpl(session, null)
+    abstract val typeRef: FirTypeRef
 
-    open fun replaceTypeRef(newTypeRef: FirTypeRef) {
-        typeRef = newTypeRef
-    }
+    abstract fun replaceTypeRef(newTypeRef: FirTypeRef)
 
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
         visitor.visitExpression(this, data)
@@ -32,12 +30,6 @@ abstract class FirExpression(
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
         super.acceptChildren(visitor, data)
         typeRef.accept(visitor, data)
-    }
-
-    override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
-        typeRef = typeRef.transformSingle(transformer, data)
-
-        return super.transformChildren(transformer, data)
     }
 }
 

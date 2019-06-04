@@ -23,11 +23,8 @@ abstract class FirArraySetCall(
         visitor.visitArraySetCall(this, data)
 
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
-        for (index in indexes) {
-            index.accept(visitor, data)
-        }
-        acceptAnnotations(visitor, data)
-        typeRef.accept(visitor, data)
-        super<FirAssignment>.acceptChildren(visitor, data)
+        super.acceptChildren(visitor, data)
+        calleeReference.accept(visitor, data)
+        rValue.accept(visitor, data)
     }
 }

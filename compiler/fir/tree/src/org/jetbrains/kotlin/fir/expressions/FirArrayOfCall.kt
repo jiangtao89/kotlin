@@ -7,12 +7,13 @@ package org.jetbrains.kotlin.fir.expressions
 
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.expressions.impl.FirAbstractCall
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
 
 abstract class FirArrayOfCall(
     session: FirSession,
     psi: PsiElement?
-) : FirCall(session, psi) {
+) : FirAbstractCall(session, psi) {
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
         visitor.visitArrayOfCall(this, data)
 }
