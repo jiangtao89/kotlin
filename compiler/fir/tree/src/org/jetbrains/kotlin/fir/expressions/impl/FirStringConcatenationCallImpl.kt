@@ -16,5 +16,7 @@ class FirStringConcatenationCallImpl(
     session: FirSession,
     psi: PsiElement?
 ) : FirStringConcatenationCall(session, psi) {
+    override fun replaceTypeRef(newTypeRef: FirTypeRef) {}
+
     override var typeRef: FirTypeRef = FirImplicitStringTypeRef(session, psi)
 }

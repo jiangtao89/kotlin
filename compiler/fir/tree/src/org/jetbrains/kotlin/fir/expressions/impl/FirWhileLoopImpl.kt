@@ -8,11 +8,10 @@ package org.jetbrains.kotlin.fir.expressions.impl
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.expressions.FirExpression
-import org.jetbrains.kotlin.fir.expressions.FirLoop
 import org.jetbrains.kotlin.fir.expressions.FirWhileLoop
 
 class FirWhileLoopImpl(
     session: FirSession,
     psi: PsiElement?,
     condition: FirExpression
-) : FirLoop(session, psi, condition), FirWhileLoop
+) : FirWhileLoop(session, psi, condition)

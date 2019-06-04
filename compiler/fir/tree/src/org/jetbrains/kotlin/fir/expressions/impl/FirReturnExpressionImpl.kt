@@ -18,13 +18,15 @@ class FirReturnExpressionImpl(
     session: FirSession,
     psi: PsiElement?,
     override var result: FirExpression
-) : FirExpression(session, psi), FirReturnExpression {
+) : FirReturnExpression(session, psi)  {
     override lateinit var target: FirTarget<FirFunction>
 
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         result = result.transformSingle(transformer, data)
-        return super<FirExpression>.transformChildren(transformer, data)
+        return super.transformChildren(transformer, data)
     }
 
     override var typeRef: FirTypeRef = FirImplicitNothingTypeRef(session, psi)
+
+    override fun replaceTypeRef(newTypeRef: FirTypeRef) {}
 }

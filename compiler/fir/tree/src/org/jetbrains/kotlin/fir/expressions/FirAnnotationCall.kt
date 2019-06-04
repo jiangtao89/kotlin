@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationUseSiteTarget
 import org.jetbrains.kotlin.fir.BaseTransformedType
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.expressions.impl.FirAbstractCallWithImplicitTypeRef
 import org.jetbrains.kotlin.fir.types.ConeClassLikeType
 import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
 import org.jetbrains.kotlin.fir.types.FirTypeRef
@@ -20,7 +21,7 @@ import org.jetbrains.kotlin.name.FqName
 abstract class FirAnnotationCall(
     session: FirSession,
     psi: PsiElement?
-) : FirCall(session, psi) {
+) : FirAbstractCallWithImplicitTypeRef(session, psi) {
     abstract val annotationTypeRef: FirTypeRef
 
     // May be should be not-null (with correct default target)

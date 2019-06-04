@@ -18,4 +18,6 @@ class FirElseIfTrueCondition(
 ) : FirExpression(session, psi) {
 
     override var typeRef: FirTypeRef = FirImplicitUnitTypeRef(session, psi)
+
+    override fun replaceTypeRef(newTypeRef: FirTypeRef) {}
 }

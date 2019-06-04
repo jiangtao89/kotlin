@@ -19,7 +19,7 @@ class FirCatchImpl(
     psi: PsiElement?,
     override var parameter: FirValueParameter,
     override var block: FirBlock
-) : FirElement(session, psi), FirCatch {
+) : FirCatch(session, psi) {
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         parameter = parameter.transformSingle(transformer, data)
         block = block.transformSingle(transformer, data)

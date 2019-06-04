@@ -19,10 +19,12 @@ class FirThrowExpressionImpl(
     session: FirSession,
     psi: PsiElement?,
     override var exception: FirExpression
-) : FirExpression(session, psi), FirThrowExpression {
+) : FirThrowExpression(session, psi) {
+    override fun replaceTypeRef(newTypeRef: FirTypeRef) {}
+
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         exception = exception.transformSingle(transformer, data)
-        return super<FirExpression>.transformChildren(transformer, data)
+        return super.transformChildren(transformer, data)
     }
 
     override var typeRef: FirTypeRef = FirImplicitNothingTypeRef(session, psi)

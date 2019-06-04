@@ -25,13 +25,14 @@ abstract class FirLoop(
     override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
         condition.accept(visitor, data)
         block.accept(visitor, data)
-        super<FirLabeledElement>.acceptChildren(visitor, data)
+        label?.accept(visitor, data)
+        super.acceptChildren(visitor, data)
     }
 
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         condition = condition.transformSingle(transformer, data)
         block = block.transformSingle(transformer, data)
         label = label?.transformSingle(transformer, data)
-        return super<FirStatement>.transformChildren(transformer, data)
+        return super.transformChildren(transformer, data)
     }
 }

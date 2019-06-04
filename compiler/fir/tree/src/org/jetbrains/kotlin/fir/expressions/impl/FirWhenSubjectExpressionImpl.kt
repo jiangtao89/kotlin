@@ -15,4 +15,4 @@ class FirWhenSubjectExpressionImpl(
     session: FirSession,
     psi: PsiElement?,
     override val whenSubject: FirWhenSubject
-) : FirExpression(session, psi), FirWhenSubjectExpression
+) : FirWhenSubjectExpression(session, psi)

@@ -19,7 +19,7 @@ class FirWhenBranchImpl(
     psi: PsiElement?,
     override var condition: FirExpression,
     override var result: FirBlock
-) : FirElement(session, psi), FirWhenBranch {
+) : FirWhenBranch(session, psi) {
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {
         condition = condition.transformSingle(transformer, data)
         result = result.transformSingle(transformer, data)

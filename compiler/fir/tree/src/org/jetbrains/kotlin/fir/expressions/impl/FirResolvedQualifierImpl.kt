@@ -17,7 +17,7 @@ class FirResolvedQualifierImpl(
     psi: PsiElement?,
     override val packageFqName: FqName,
     override val relativeClassFqName: FqName?
-) : FirResolvedQualifier, FirExpression(session, psi) {
+) : FirResolvedQualifier(session, psi) {
     constructor(session: FirSession, psi: PsiElement?, classId: ClassId) : this(
         session,
         psi,

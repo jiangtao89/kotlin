@@ -15,5 +15,7 @@ class FirUnitExpression(
     session: FirSession,
     psi: PsiElement?
 ) : FirExpression(session, psi) {
+    override fun replaceTypeRef(newTypeRef: FirTypeRef) {}
+
     override var typeRef: FirTypeRef = FirImplicitUnitTypeRef(session, psi)
 }

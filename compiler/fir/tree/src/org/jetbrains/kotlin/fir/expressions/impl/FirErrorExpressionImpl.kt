@@ -8,10 +8,9 @@ package org.jetbrains.kotlin.fir.expressions.impl
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirSession
 import org.jetbrains.kotlin.fir.expressions.FirErrorExpression
-import org.jetbrains.kotlin.fir.expressions.FirExpression
 
 class FirErrorExpressionImpl(
     session: FirSession,
     psi: PsiElement?,
     override val reason: String
-) : FirExpression(session, psi), FirErrorExpression
+) : FirErrorExpression(session, psi)

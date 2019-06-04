@@ -21,4 +21,6 @@ abstract class FirAbstractLoopJump(
     override lateinit var target: FirTarget<FirLoop>
 
     override var typeRef: FirTypeRef = FirImplicitNothingTypeRef(session, psi)
+
+    override fun replaceTypeRef(newTypeRef: FirTypeRef) {}
 }

@@ -12,4 +12,4 @@ import org.jetbrains.kotlin.fir.expressions.FirExpression
 class FirExpressionStub(
     session: FirSession,
     psi: PsiElement?
-) : FirExpression(session, psi)
+) : FirAbstractExpression(session, psi)
