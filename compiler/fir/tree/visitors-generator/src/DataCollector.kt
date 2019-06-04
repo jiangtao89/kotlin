@@ -5,9 +5,12 @@
 
 package org.jetbrains.kotlin.fir.visitors.generator
 
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.findDescendantOfType
+import org.jetbrains.kotlin.psi.psiUtil.isAbstract
+import org.jetbrains.kotlin.psi.psiUtil.modalityModifierType
 
 class DataCollector {
 
@@ -88,7 +91,7 @@ class DataCollector {
                     return
                 }
                 val classNameWithParameters = NameWithTypeParameters(className, klass.typeParameterList?.text ?: "")
-                if (klass.isInterface()) {
+                if (klass.isInterface() || klass.hasModifier(KtTokens.ABSTRACT_KEYWORD) && klass.name?.contains("Abstract") == false) {
                     packagePerClass[classNameWithParameters] = file.packageFqName
                     val isBaseTT = klass.annotationEntries.any {
                         it.shortName?.asString() == BASE_TRANSFORMED_TYPE_ANNOTATION_NAME
