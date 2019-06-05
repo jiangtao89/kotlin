@@ -61,7 +61,7 @@ abstract class AbstractFirOverrideScope(val session: FirSession) : FirScope {
     protected fun ConeCallableSymbol.isOverridden(seen: Set<ConeCallableSymbol>): ConeCallableSymbol? {
         if (overrides.containsKey(this)) return overrides[this]
 
-        fun similarFunctionsOrBothProperties(declaration: FirCallableDeclaration, self: FirCallableDeclaration): Boolean {
+        fun similarFunctionsOrBothProperties(declaration: FirCallableMemberDeclaration, self: FirCallableMemberDeclaration): Boolean {
             return when (declaration) {
                 is FirNamedFunction -> self is FirNamedFunction && isOverriddenFunCheck(declaration, self)
                 is FirConstructor -> false

@@ -5,29 +5,14 @@
 
 package org.jetbrains.kotlin.fir.declarations
 
-import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.VisitedSupertype
 import org.jetbrains.kotlin.fir.symbols.FirSymbolOwner
 import org.jetbrains.kotlin.fir.symbols.impl.FirCallableSymbol
 import org.jetbrains.kotlin.fir.types.FirTypeRef
-import org.jetbrains.kotlin.fir.visitors.FirVisitor
 
 // Good name needed (something with receiver, type parameters, return type, and name)
-abstract class FirCallableDeclaration(
-    session: FirSession,
-    psi: PsiElement?
-) : @VisitedSupertype FirDeclaration(session, psi), FirTypedDeclaration, FirSymbolOwner<FirCallableDeclaration> {
+interface FirCallableDeclaration<D> : FirTypedDeclaration, FirSymbolOwner<D> where D : FirNamedDeclaration, D : FirCallableDeclaration<D> {
 
-    abstract override val symbol: FirCallableSymbol
+    override val symbol: FirCallableSymbol<D>
 
-    abstract val receiverTypeRef: FirTypeRef?
-
-    override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
-        visitor.visitCallableDeclaration(this, data)
-
-    override fun <R, D> acceptChildren(visitor: FirVisitor<R, D>, data: D) {
-        receiverTypeRef?.accept(visitor, data)
-        super.acceptChildren(visitor, data)
-    }
+    val receiverTypeRef: FirTypeRef?
 }

@@ -15,11 +15,7 @@ import org.jetbrains.kotlin.fir.visitors.FirVisitor
 abstract class FirCall(
     session: FirSession,
     psi: PsiElement?
-) : FirExpression(session, psi) {
-    abstract val arguments: List<FirExpression>
-
-    abstract fun <D> transformArguments(transformer: FirTransformer<D>, data: D): FirCall
-
+) : FirExpression(session, psi), FirArgumentContainer {
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
         visitor.visitCall(this, data)
 

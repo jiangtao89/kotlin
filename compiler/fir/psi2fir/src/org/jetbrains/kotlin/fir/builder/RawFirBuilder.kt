@@ -299,7 +299,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             }
         }
 
-        private fun KtTypeParameterListOwner.extractTypeParametersTo(container: FirAbstractMemberDeclaration) {
+        private fun KtTypeParameterListOwner.extractTypeParametersTo(container: FirMemberDeclaration) {
             for (typeParameter in typeParameters) {
                 container.typeParameters += typeParameter.convert<FirTypeParameter>()
             }
@@ -713,7 +713,7 @@ class RawFirBuilder(val session: FirSession, val stubMode: Boolean) {
             val firConstructor = FirConstructorImpl(
                 session,
                 this,
-                FirFunctionSymbol(callableIdForClassConstructor()),
+                FirConstructorSymbol(callableIdForClassConstructor()),
                 visibility,
                 hasExpectModifier(),
                 hasActualModifier(),

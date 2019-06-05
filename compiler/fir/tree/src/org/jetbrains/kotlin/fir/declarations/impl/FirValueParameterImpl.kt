@@ -8,7 +8,6 @@ package org.jetbrains.kotlin.fir.declarations.impl
 import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.declarations.FirNamedDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirValueParameter
 import org.jetbrains.kotlin.fir.expressions.FirExpression
 import org.jetbrains.kotlin.fir.symbols.impl.FirVariableSymbol
@@ -27,7 +26,7 @@ open class FirValueParameterImpl(
     override val isNoinline: Boolean,
     override val isVararg: Boolean,
     override val symbol: FirVariableSymbol = FirVariableSymbol(name)
-) : FirNamedDeclaration(session, psi, name), FirValueParameter {
+) : FirValueParameter(session, psi, name) {
 
     init {
         symbol.bind(this)
@@ -46,7 +45,7 @@ open class FirValueParameterImpl(
         returnTypeRef = returnTypeRef.transformSingle(transformer, data)
         defaultValue = defaultValue?.transformSingle(transformer, data)
 
-        return super<FirNamedDeclaration>.transformChildren(transformer, data)
+        return super.transformChildren(transformer, data)
     }
 
     override fun <D> transformReturnTypeRef(transformer: FirTransformer<D>, data: D) {
