@@ -76,6 +76,11 @@ public class InsertImportOnPasteTestGenerated extends AbstractInsertImportOnPast
             runTest("idea/testData/copyPaste/imports/ClassType.kt");
         }
 
+        @TestMetadata("ClassWithDoc.kt")
+        public void testClassWithDoc() throws Exception {
+            runTest("idea/testData/copyPaste/imports/ClassWithDoc.kt");
+        }
+
         @TestMetadata("ConflictForTypeWithTypeParameter.kt")
         public void testConflictForTypeWithTypeParameter() throws Exception {
             runTest("idea/testData/copyPaste/imports/ConflictForTypeWithTypeParameter.kt");
