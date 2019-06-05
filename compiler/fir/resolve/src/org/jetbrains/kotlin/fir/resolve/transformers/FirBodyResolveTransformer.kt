@@ -218,7 +218,7 @@ open class FirBodyResolveTransformer(val session: FirSession, val implicitTypeOn
                         returnType
                     }
                 } else if (symbol is ConeClassifierSymbol) {
-                    val firUnsafe = symbol.firUnsafe<FirElement>()
+                    val firUnsafe = symbol.firUnsafe<FirNamedDeclaration>()
                     // TODO: unhack
                     if (firUnsafe is FirEnumEntry) {
                         (firUnsafe.superTypeRefs.firstOrNull() as? FirResolvedTypeRef) ?: FirErrorTypeRefImpl(
@@ -288,7 +288,7 @@ open class FirBodyResolveTransformer(val session: FirSession, val implicitTypeOn
         val resultType = resolvedQualifier.resultType
         if (classId != null) {
             val classSymbol = symbolProvider.getClassLikeSymbolByFqName(classId)!!
-            val declaration = classSymbol.firUnsafe<FirClassLikeDeclaration>()
+            val declaration = classSymbol.firUnsafe<FirClassLikeDeclaration<*>>()
             if (declaration is FirClass) {
                 if (declaration.classKind == ClassKind.OBJECT) {
                     return resultType.resolvedTypeFromPrototype(
@@ -976,7 +976,7 @@ open class FirBodyResolveTransformer(val session: FirSession, val implicitTypeOn
                     val symbol = symbolProvider.getClassLikeSymbolByFqName(classId)!!
                     // TODO: Unify logic?
                     symbol.constructType(
-                        Array(symbol.firUnsafe<FirClassLikeDeclaration>().typeParameters.size) {
+                        Array(symbol.firUnsafe<FirClassLikeDeclaration<*>>().typeParameters.size) {
                             ConeStarProjection
                         },
                         isNullable = false
@@ -1033,7 +1033,7 @@ class ReturnTypeCalculatorWithJump(val session: FirSession) : ReturnTypeCalculat
         val returnTypeRef = declaration.returnTypeRef
         if (returnTypeRef is FirResolvedTypeRef) return returnTypeRef
         cycleErrorType(declaration)?.let { return it }
-        require(declaration is FirCallableMemberDeclaration) { "${declaration::class}: ${declaration.render()}" }
+        require(declaration is FirCallableMemberDeclaration<*>) { "${declaration::class}: ${(declaration as FirElement).render()}" }
 
 
         val symbol = declaration.symbol as ConeCallableSymbol
@@ -1110,7 +1110,7 @@ class FirBodyResolveTransformerAdapter : FirTransformer<Nothing?>() {
 }
 
 
-inline fun <reified T : FirElement> ConeSymbol.firUnsafe(): T {
+inline fun <reified T : FirNamedDeclaration> ConeSymbol.firUnsafe(): T {
     require(this is FirBasedSymbol<*>) {
         "Not a fir based symbol: ${this}"
     }
@@ -1121,7 +1121,7 @@ inline fun <reified T : FirElement> ConeSymbol.firUnsafe(): T {
     return fir
 }
 
-inline fun <reified T : FirElement> ConeSymbol.firSafeNullable(): T? {
+inline fun <reified T : FirNamedDeclaration> ConeSymbol.firSafeNullable(): T? {
     if (this !is FirBasedSymbol<*>) return null
     return fir as? T
 }
