@@ -129,7 +129,7 @@ abstract class ScriptCompilationConfigurationWrapper(val script: SourceCode) {
 
         // TODO: check whether implemented optimization for frequent calls makes sense here
         override val dependenciesClassPath: List<File> by lazy {
-            configuration?.get(ScriptCompilationConfiguration.ide.dependenciesSources).toClassPathOrEmpty()
+            configuration?.get(ScriptCompilationConfiguration.dependencies).toClassPathOrEmpty()
         }
 
         // TODO: check whether implemented optimization for frequent calls makes sense here
