@@ -89,6 +89,10 @@ open class KotlinJsTest : KotlinTest(), RequiresNpmDependencies {
         val testFramework = runner.also(body)
         this.testFramework = testFramework
 
+        this.onlyIf {
+            testFramework.shouldExecute
+        }
+
         return testFramework
     }
 

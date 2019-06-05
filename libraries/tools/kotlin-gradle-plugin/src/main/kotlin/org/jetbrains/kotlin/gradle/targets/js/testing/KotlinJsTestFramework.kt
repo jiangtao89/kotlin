@@ -12,6 +12,9 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.RequiresNpmDependencies
 interface KotlinJsTestFramework : RequiresNpmDependencies {
     val settingsState: String
 
+    val shouldExecute: Boolean
+        get() = true
+
     fun createTestExecutionSpec(
         task: KotlinJsTest,
         forkOptions: ProcessForkOptions,

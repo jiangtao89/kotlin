@@ -49,6 +49,9 @@ class KotlinKarma(override val compilation: KotlinJsCompilation) : KotlinJsTestF
     override val settingsState: String
         get() = "KotlinKarma($config)"
 
+    override val shouldExecute: Boolean
+        get() = config.browsers.isNotEmpty()
+
     init {
         requiredDependencies.add(versions.karma)
 
