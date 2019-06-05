@@ -18,8 +18,8 @@ class FirDelegatedTypeRefImpl(
     session: FirSession,
     override var typeRef: FirTypeRef,
     override var delegate: FirExpression?
-) : FirElement(session, typeRef.psi), FirDelegatedTypeRef {
-    override val annotations: List<FirAnnotationCall>
+) : FirDelegatedTypeRef(session, typeRef.psi) {
+    override val annotations: MutableList<FirAnnotationCall>
         get() = typeRef.annotations
 
     override fun <D> transformChildren(transformer: FirTransformer<D>, data: D): FirElement {

@@ -20,7 +20,10 @@ abstract class FirResolvedTypeRef(
         visitor.visitResolvedTypeRef(this, data)
 }
 
-interface FirResolvedFunctionTypeRef : @VisitedSupertype FirResolvedTypeRef, FirFunctionTypeRef {
+abstract class FirResolvedFunctionTypeRef(
+    session: FirSession,
+    psi: PsiElement?
+) : @VisitedSupertype FirResolvedTypeRef(session, psi), FirFunctionTypeRef {
     override fun <R, D> accept(visitor: FirVisitor<R, D>, data: D): R =
         visitor.visitResolvedFunctionTypeRef(this, data)
 }

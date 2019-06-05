@@ -30,6 +30,6 @@ class FirFunctionTypeRefImpl(
         returnTypeRef = returnTypeRef.transformSingle(transformer, data)
         valueParameters.transformInplace(transformer, data)
 
-        return super<FirTypeRefWithNullability>.transformChildren(transformer, data)
+        return super.transformChildren(transformer, data)
     }
 }
