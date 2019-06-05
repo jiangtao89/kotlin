@@ -6,10 +6,9 @@
 package org.jetbrains.kotlin.fir.scopes.impl
 
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.declarations.FirCallableMemberDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirConstructor
-import org.jetbrains.kotlin.fir.declarations.FirFunction
 import org.jetbrains.kotlin.fir.declarations.FirNamedFunction
-import org.jetbrains.kotlin.fir.declarations.impl.FirDeclarationStatusImpl
 import org.jetbrains.kotlin.fir.declarations.impl.FirMemberFunctionImpl
 import org.jetbrains.kotlin.fir.declarations.impl.FirValueParameterImpl
 import org.jetbrains.kotlin.fir.resolve.substitution.ConeSubstitutorByMap
@@ -17,10 +16,16 @@ import org.jetbrains.kotlin.fir.resolve.transformers.ReturnTypeCalculatorWithJum
 import org.jetbrains.kotlin.fir.resolve.transformers.firUnsafe
 import org.jetbrains.kotlin.fir.scopes.FirScope
 import org.jetbrains.kotlin.fir.scopes.ProcessorAction
-import org.jetbrains.kotlin.fir.symbols.*
+import org.jetbrains.kotlin.fir.symbols.ConeCallableSymbol
+import org.jetbrains.kotlin.fir.symbols.ConeFunctionSymbol
+import org.jetbrains.kotlin.fir.symbols.ConeTypeParameterSymbol
+import org.jetbrains.kotlin.fir.symbols.ConeVariableSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirFunctionSymbol
 import org.jetbrains.kotlin.fir.symbols.impl.FirVariableSymbol
-import org.jetbrains.kotlin.fir.types.*
+import org.jetbrains.kotlin.fir.types.ConeKotlinType
+import org.jetbrains.kotlin.fir.types.FirResolvedTypeRef
+import org.jetbrains.kotlin.fir.types.FirTypeRef
+import org.jetbrains.kotlin.fir.types.coneTypeUnsafe
 import org.jetbrains.kotlin.fir.types.impl.FirResolvedTypeRefImpl
 import org.jetbrains.kotlin.name.Name
 
@@ -57,7 +62,7 @@ class FirClassSubstitutionScope(
 
     private fun createFakeOverride(original: ConeFunctionSymbol): FirFunctionSymbol {
 
-        val member = original.firUnsafe<FirFunction>()
+        val member = original.firUnsafe<FirCallableMemberDeclaration<*>>()
         if (member is FirConstructor) return original as FirFunctionSymbol // TODO: substitution for constructors
         member as FirNamedFunction
 
@@ -93,7 +98,7 @@ class FirClassSubstitutionScope(
                     baseFunction.receiverTypeRef?.withReplacedConeType(session, newReceiverType),
                     baseFunction.returnTypeRef.withReplacedConeType(session, newReturnType)
                 ).apply {
-                    status = baseFunction.status as FirDeclarationStatusImpl
+                    status = baseFunction.status
                     valueParameters += baseFunction.valueParameters.zip(
                         newParameterTypes ?: List(baseFunction.valueParameters.size) { null }
                     ) { valueParameter, newType ->
