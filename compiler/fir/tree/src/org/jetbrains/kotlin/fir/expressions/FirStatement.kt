@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.fir.BaseTransformedType
 import org.jetbrains.kotlin.fir.FirElement
 import org.jetbrains.kotlin.fir.FirSession
+import org.jetbrains.kotlin.fir.expressions.impl.FirMutableAnnotationContainer
 import org.jetbrains.kotlin.fir.transformInplace
 import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.FirVisitor
@@ -17,7 +18,7 @@ import org.jetbrains.kotlin.fir.visitors.FirVisitor
 abstract class FirStatement(
     session: FirSession,
     psi: PsiElement?
-) : FirElement(session, psi), FirAnnotationContainer {
+) : FirElement(session, psi), FirMutableAnnotationContainer {
 
     final override val annotations = mutableListOf<FirAnnotationCall>()
 

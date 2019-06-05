@@ -441,7 +441,7 @@ internal fun generateDestructuringBlock(
     multiDeclaration: KtDestructuringDeclaration,
     container: FirVariable,
     tmpVariable: Boolean,
-    extractAnnotationsTo: KtAnnotated.(FirAbstractAnnotatedElement) -> Unit,
+    extractAnnotationsTo: KtAnnotated.(FirMutableAnnotationContainer) -> Unit,
     toFirOrImplicitTypeRef: KtTypeReference?.() -> FirTypeRef
 ): FirExpression {
     return FirBlockImpl(session, multiDeclaration).apply {

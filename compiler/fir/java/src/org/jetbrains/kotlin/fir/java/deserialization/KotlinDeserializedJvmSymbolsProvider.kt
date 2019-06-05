@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.fir.references.FirErrorNamedReference
 import org.jetbrains.kotlin.fir.references.FirResolvedCallableReferenceImpl
 import org.jetbrains.kotlin.fir.resolve.*
 import org.jetbrains.kotlin.fir.resolve.transformers.firSafeNullable
-import org.jetbrains.kotlin.fir.resolve.transformers.firUnsafe
 import org.jetbrains.kotlin.fir.scopes.FirScope
 import org.jetbrains.kotlin.fir.scopes.impl.FirClassDeclaredMemberScope
 import org.jetbrains.kotlin.fir.service
@@ -359,7 +358,7 @@ class KotlinDeserializedJvmSymbolsProvider(
 
 
             }, null)
-            (symbol.fir as FirAbstractAnnotatedElement).annotations += annotations
+            (symbol.fir as FirMutableAnnotationContainer).annotations += annotations
         }
 
         return classesCache[classId]
