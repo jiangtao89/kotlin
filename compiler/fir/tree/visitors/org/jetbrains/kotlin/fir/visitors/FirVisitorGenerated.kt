@@ -8,7 +8,6 @@ import org.jetbrains.kotlin.fir.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.declarations.impl.*
 import org.jetbrains.kotlin.fir.expressions.*
-import org.jetbrains.kotlin.fir.expressions.impl.*
 import org.jetbrains.kotlin.fir.types.*
 
 
@@ -24,11 +23,7 @@ abstract class FirVisitor<out R, in D> {
         return visitElement(declaration, data)
     }
 
-    open fun visitCallableDeclaration(callableDeclaration: FirCallableDeclaration, data: D): R {
-        return visitDeclaration(callableDeclaration, data)
-    }
-
-    open fun visitCallableMemberDeclaration(callableMemberDeclaration: FirCallableMemberDeclaration, data: D): R {
+    open fun <T : FirCallableMemberDeclaration<T>> visitCallableMemberDeclaration(callableMemberDeclaration: FirCallableMemberDeclaration<T>, data: D): R {
         return visitDeclaration(callableMemberDeclaration, data)
     }
 
@@ -40,28 +35,20 @@ abstract class FirVisitor<out R, in D> {
         return visitDeclarationWithBody(anonymousInitializer, data)
     }
 
-    open fun visitFunction(function: FirFunction, data: D): R {
-        return visitDeclarationWithBody(function, data)
-    }
-
     open fun visitAnonymousFunction(anonymousFunction: FirAnonymousFunction, data: D): R {
-        return visitFunction(anonymousFunction, data)
+        return visitExpression(anonymousFunction, data)
     }
 
     open fun visitConstructor(constructor: FirConstructor, data: D): R {
-        return visitFunction(constructor, data)
-    }
-
-    open fun visitModifiableFunction(modifiableFunction: FirModifiableFunction, data: D): R {
-        return visitFunction(modifiableFunction, data)
+        return visitCallableMemberDeclaration(constructor, data)
     }
 
     open fun visitNamedFunction(namedFunction: FirNamedFunction, data: D): R {
-        return visitFunction(namedFunction, data)
+        return visitCallableMemberDeclaration(namedFunction, data)
     }
 
     open fun visitPropertyAccessor(propertyAccessor: FirPropertyAccessor, data: D): R {
-        return visitFunction(propertyAccessor, data)
+        return visitDeclarationWithBody(propertyAccessor, data)
     }
 
     open fun visitDefaultPropertyAccessor(defaultPropertyAccessor: FirDefaultPropertyAccessor, data: D): R {
@@ -84,7 +71,7 @@ abstract class FirVisitor<out R, in D> {
         return visitNamedDeclaration(memberDeclaration, data)
     }
 
-    open fun visitClassLikeDeclaration(classLikeDeclaration: FirClassLikeDeclaration, data: D): R {
+    open fun <T : FirClassLikeDeclaration<T>> visitClassLikeDeclaration(classLikeDeclaration: FirClassLikeDeclaration<T>, data: D): R {
         return visitMemberDeclaration(classLikeDeclaration, data)
     }
 
@@ -168,20 +155,8 @@ abstract class FirVisitor<out R, in D> {
         return visitElement(statement, data)
     }
 
-    open fun visitClass(klass: FirClass, data: D): R {
-        return visitStatement(klass, data)
-    }
-
     open fun visitAnonymousObject(anonymousObject: FirAnonymousObject, data: D): R {
-        return visitClass(anonymousObject, data)
-    }
-
-    open fun visitModifiableClass(modifiableClass: FirModifiableClass, data: D): R {
-        return visitClass(modifiableClass, data)
-    }
-
-    open fun visitErrorStatement(errorStatement: FirErrorStatement, data: D): R {
-        return visitStatement(errorStatement, data)
+        return visitExpression(anonymousObject, data)
     }
 
     open fun visitExpression(expression: FirExpression, data: D): R {
@@ -317,7 +292,7 @@ abstract class FirVisitor<out R, in D> {
     }
 
     open fun visitVariableAssignment(variableAssignment: FirVariableAssignment, data: D): R {
-        return visitAssignment(variableAssignment, data)
+        return visitStatement(variableAssignment, data)
     }
 
     open fun visitQualifiedAccessExpression(qualifiedAccessExpression: FirQualifiedAccessExpression, data: D): R {
@@ -370,10 +345,6 @@ abstract class FirVisitor<out R, in D> {
 
     open fun visitDynamicTypeRef(dynamicTypeRef: FirDynamicTypeRef, data: D): R {
         return visitTypeRefWithNullability(dynamicTypeRef, data)
-    }
-
-    open fun visitFunctionTypeRef(functionTypeRef: FirFunctionTypeRef, data: D): R {
-        return visitTypeRefWithNullability(functionTypeRef, data)
     }
 
     open fun visitUserTypeRef(userTypeRef: FirUserTypeRef, data: D): R {
