@@ -130,7 +130,13 @@ class ExtractingMetadataLibraryImpl(zipped: MetadataLibraryLayoutImpl) :
 class ExtractingIrLibraryImpl(zipped: IrLibraryLayoutImpl) : KotlinLibraryExtractor(zipped),
     IrKotlinLibraryLayout by zipped {
 
-    override val irFile: File by lazy { extract(zipped.irFile) }
+    override val irDeclarations: File by lazy { extract(super.irDeclarations) }
+
+    override val irSymbols: File by lazy { extract(super.irSymbols) }
+
+    override val irTypes: File by lazy { extract(super.irTypes) }
+
+    override val irStrings: File by lazy { extract(super.irStrings) }
 }
 
 

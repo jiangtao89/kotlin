@@ -55,9 +55,9 @@ data class KlibModuleRef(
     val klibPath: String
 )
 
-internal val JS_KLIBRARY_CAPABILITY = ModuleDescriptor.Capability<File>("JS KLIBRARY")
+internal val JS_KLIBRARY_CAPABILITY = ModuleDescriptor.Capability<String>("JS KLIBRARY")
 internal val moduleHeaderFileName = "module.kji"
-internal val declarationsDirName = "ir/"
+internal val declarationsDirName = "ir/ir_tables/"
 private val emptyLoggingContext = object : LoggingContext {
     override var inVerbosePhase = false
 
@@ -313,6 +313,12 @@ fun serializeModuleIntoKlib(
     val irDeclarationDir = File(klibDir, declarationsDirName).also { it.mkdir() }
     val irCombinedFile = File(irDeclarationDir, "irCombined.knd")
     move(Paths.get(serializedIr.combinedDeclarationFilePath), Paths.get(irCombinedFile.path), StandardCopyOption.REPLACE_EXISTING)
+    val symbolsFile = File(irDeclarationDir, "symbols.knt")
+    move(Paths.get(serializedIr.symbolTableFilePath), Paths.get(symbolsFile.path), StandardCopyOption.REPLACE_EXISTING)
+    val typesFile = File(irDeclarationDir, "types.knt")
+    move(Paths.get(serializedIr.typeTableFilePath), Paths.get(typesFile.path), StandardCopyOption.REPLACE_EXISTING)
+    val stringsFile = File(irDeclarationDir, "strings.knt")
+    move(Paths.get(serializedIr.stringTableFilePath), Paths.get(stringsFile.path), StandardCopyOption.REPLACE_EXISTING)
 
     File(klibDir, "${moduleDescription.name}.${JsKlibMetadataSerializationUtil.CLASS_METADATA_FILE_EXTENSION}").also {
         it.writeBytes(serializedData.asByteArray())
