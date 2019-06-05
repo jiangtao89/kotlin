@@ -29,6 +29,7 @@ import com.intellij.util.containers.SLRUMap
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jetbrains.kotlin.idea.core.util.EDT
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationResult
 import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.write
@@ -36,6 +37,7 @@ import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
 import kotlin.reflect.jvm.isAccessible
+import kotlin.script.experimental.api.valueOrNull
 
 class ScriptsCompilationConfigurationCache(private val project: Project) {
 
@@ -45,10 +47,10 @@ class ScriptsCompilationConfigurationCache(private val project: Project) {
 
     private val cacheLock = ReentrantReadWriteLock()
 
-    private val scriptDependenciesCache = SLRUCacheWithLock<ScriptCompilationConfigurationWrapper>()
+    private val scriptDependenciesCache = SLRUCacheWithLock<ScriptCompilationConfigurationResult>()
     private val scriptsModificationStampsCache = SLRUCacheWithLock<Long>()
 
-    operator fun get(virtualFile: VirtualFile): ScriptCompilationConfigurationWrapper? = scriptDependenciesCache.get(virtualFile)
+    operator fun get(virtualFile: VirtualFile): ScriptCompilationConfigurationResult? = scriptDependenciesCache.get(virtualFile)
 
     fun shouldRunDependenciesUpdate(file: VirtualFile): Boolean {
         return scriptsModificationStampsCache.replace(file, file.modificationStamp) != file.modificationStamp
@@ -58,7 +60,7 @@ class ScriptsCompilationConfigurationCache(private val project: Project) {
 
     fun scriptDependenciesClassFilesScope(file: VirtualFile): GlobalSearchScope {
         return scriptsDependenciesClasspathScopeCache.getOrPut(file) {
-            val compilationConfiguration = scriptDependenciesCache.get(file) ?: return@getOrPut GlobalSearchScope.EMPTY_SCOPE
+            val compilationConfiguration = scriptDependenciesCache.get(file)?.valueOrNull() ?: return@getOrPut GlobalSearchScope.EMPTY_SCOPE
             val roots = compilationConfiguration.dependenciesClassPath
 
             val sdk = ScriptDependenciesManager.getScriptSdk(compilationConfiguration)
@@ -86,7 +88,8 @@ class ScriptsCompilationConfigurationCache(private val project: Project) {
             .filter { it != ScriptDependenciesManager.getProjectSdk(project) }
             .flatMap { it.rootProvider.getFiles(OrderRootType.CLASSES).toList() }
 
-        val scriptDependenciesClasspath = scriptDependenciesCache.getAll().flatMap { it.value.dependenciesClassPath }.distinct()
+        val scriptDependenciesClasspath = scriptDependenciesCache.getAll()
+            .flatMap { it.value.valueOrNull()?.dependenciesClassPath ?: emptyList() }.distinct()
 
         sdkFiles + ScriptDependenciesManager.toVfsRoots(scriptDependenciesClasspath)
     }
@@ -96,7 +99,8 @@ class ScriptsCompilationConfigurationCache(private val project: Project) {
             .filter { it != ScriptDependenciesManager.getProjectSdk(project) }
             .flatMap { it.rootProvider.getFiles(OrderRootType.SOURCES).toList() }
 
-        val scriptDependenciesSources = scriptDependenciesCache.getAll().flatMap { it.value.dependenciesSources }.distinct()
+        val scriptDependenciesSources = scriptDependenciesCache.getAll()
+            .flatMap { it.value.valueOrNull()?.dependenciesSources ?: emptyList() }.distinct()
         sdkSources + ScriptDependenciesManager.toVfsRoots(scriptDependenciesSources)
     }
 
@@ -154,7 +158,7 @@ class ScriptsCompilationConfigurationCache(private val project: Project) {
         onChange(keys)
     }
 
-    fun save(virtualFile: VirtualFile, new: ScriptCompilationConfigurationWrapper): Boolean {
+    fun save(virtualFile: VirtualFile, new: ScriptCompilationConfigurationResult): Boolean {
         val old = scriptDependenciesCache.replace(virtualFile, new)
         val changed = new != old
         if (changed) {

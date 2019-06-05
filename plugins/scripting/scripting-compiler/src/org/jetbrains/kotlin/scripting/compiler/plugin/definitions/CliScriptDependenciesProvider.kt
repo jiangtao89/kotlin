@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.scripting.definitions.ScriptDependenciesProvider
 import org.jetbrains.kotlin.scripting.definitions.findScriptDefinition
-import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationResult
 import org.jetbrains.kotlin.scripting.resolve.ScriptReportSink
 import org.jetbrains.kotlin.scripting.resolve.VirtualFileScriptSource
 import org.jetbrains.kotlin.scripting.resolve.refineScriptCompilationConfiguration
@@ -24,13 +24,13 @@ import kotlin.script.experimental.jvm.compat.mapToLegacyReports
 
 class CliScriptDependenciesProvider(private val project: Project) : ScriptDependenciesProvider {
     private val cacheLock = ReentrantReadWriteLock()
-    private val cache = hashMapOf<String, ScriptCompilationConfigurationWrapper?>()
+    private val cache = hashMapOf<String, ScriptCompilationConfigurationResult?>()
 
-    override fun getScriptRefinedCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? = cacheLock.read {
+    override fun getScriptConfigurationResult(file: VirtualFile): ScriptCompilationConfigurationResult? = cacheLock.read {
         calculateRefinedConfiguration(file)
     }
 
-    private fun calculateRefinedConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? {
+    private fun calculateRefinedConfiguration(file: VirtualFile): ScriptCompilationConfigurationResult? {
         val path = file.path
         val cached = cache[path]
         return if (cached != null) cached
@@ -41,13 +41,15 @@ class CliScriptDependenciesProvider(private val project: Project) : ScriptDepend
 
                 ServiceManager.getService(project, ScriptReportSink::class.java)?.attachReports(file, result.reports.mapToLegacyReports())
 
-                if (result is ResultWithDiagnostics.Success<ScriptCompilationConfigurationWrapper>) {
+                if (result is ResultWithDiagnostics.Success) {
                     log.info("[kts] new cached deps for $path: ${result.value.dependenciesClassPath.joinToString(File.pathSeparator)}")
-                    cacheLock.write {
-                        cache.put(path, result.value)
-                    }
-                    result.value
-                } else null
+                } else {
+                    log.info("[kts] new cached errors for $path:\n  ${result.reports.joinToString("\n  ") { it.message + if (it.exception == null) "" else ": ${it.exception}" }}")
+                }
+                cacheLock.write {
+                    cache.put(path, result)
+                }
+                result
             } else null
         }
     }

@@ -48,6 +48,7 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getElementTextWithContext
 import org.jetbrains.kotlin.resolve.AnalyzingUtils
 import java.io.File
+import kotlin.script.experimental.api.valueOrNull
 
 class KtCompilingExecutor(file: ScratchFile) : ScratchExecutor(file) {
     companion object {
@@ -186,9 +187,10 @@ class KtCompilingExecutor(file: ScratchFile) : ScratchExecutor(file) {
             javaParameters.classPath.addAll(JavaParametersBuilder.getModuleDependencies(module))
         }
 
-        ScriptDependenciesManager.getInstance(originalFile.project).getRefinedCompilationConfiguration(originalFile.virtualFile)?.let {
-            javaParameters.classPath.addAll(it.dependenciesClassPath.map { f -> f.absolutePath })
-        }
+        ScriptDependenciesManager.getInstance(originalFile.project)
+            .getRefinedCompilationConfiguration(originalFile.virtualFile)?.valueOrNull()?.let {
+                javaParameters.classPath.addAll(it.dependenciesClassPath.map { f -> f.absolutePath })
+            }
 
         return javaParameters.toCommandLine()
     }

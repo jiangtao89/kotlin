@@ -44,6 +44,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.firstIsInstanceOrNull
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.script.experimental.api.valueOrNull
 
 
 class LazyScriptDescriptor(
@@ -168,7 +169,7 @@ class LazyScriptDescriptor(
         val res = ArrayList<ClassDescriptor>()
 
         val importedScriptsFiles = ScriptDependenciesProvider.getInstance(scriptInfo.script.project)
-            ?.getScriptRefinedCompilationConfiguration(scriptInfo.script.containingKtFile)?.importedScripts
+            ?.getScriptConfigurationResult(scriptInfo.script.containingKtFile)?.valueOrNull()?.importedScripts
         if (importedScriptsFiles != null) {
             val findImportedScriptDescriptor = ImportedScriptDescriptorsFinder()
             importedScriptsFiles.mapNotNullTo(res) {

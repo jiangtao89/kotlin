@@ -16,7 +16,7 @@ import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.HyperlinkLabel
 import org.jetbrains.kotlin.idea.core.script.settings.KotlinScriptingSettings
 import org.jetbrains.kotlin.psi.UserDataProperty
-import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationResult
 
 fun VirtualFile.removeScriptDependenciesNotificationPanel(project: Project) {
     withSelectedEditor(project) { manager ->
@@ -28,14 +28,14 @@ fun VirtualFile.removeScriptDependenciesNotificationPanel(project: Project) {
 }
 
 fun VirtualFile.addScriptDependenciesNotificationPanel(
-    compilationConfiguration: ScriptCompilationConfigurationWrapper?,
+    compilationConfigurationResult: ScriptCompilationConfigurationResult?,
     project: Project,
-    onClick: (ScriptCompilationConfigurationWrapper?) -> Unit
+    onClick: (ScriptCompilationConfigurationResult?) -> Unit
 ) {
     withSelectedEditor(project) { manager ->
         val existingPanel = notificationPanel
         if (existingPanel != null) {
-            if (existingPanel.compilationConfiguration == compilationConfiguration) {
+            if (existingPanel.compilationConfigurationResult == compilationConfigurationResult) {
                 return@withSelectedEditor
             }
             notificationPanel?.let {
@@ -43,7 +43,7 @@ fun VirtualFile.addScriptDependenciesNotificationPanel(
             }
         }
 
-        val panel = NewScriptDependenciesNotificationPanel(onClick, compilationConfiguration, project)
+        val panel = NewScriptDependenciesNotificationPanel(onClick, compilationConfigurationResult, project)
         notificationPanel = panel
         manager.addTopComponent(this, panel)
     }
@@ -61,19 +61,19 @@ private fun VirtualFile.withSelectedEditor(project: Project, f: FileEditor.(File
 private var FileEditor.notificationPanel: NewScriptDependenciesNotificationPanel? by UserDataProperty<FileEditor, NewScriptDependenciesNotificationPanel>(Key.create("script.dependencies.panel"))
 
 private class NewScriptDependenciesNotificationPanel(
-    onClick: (ScriptCompilationConfigurationWrapper?) -> Unit,
-    val compilationConfiguration: ScriptCompilationConfigurationWrapper?,
+    onClick: (ScriptCompilationConfigurationResult?) -> Unit,
+    val compilationConfigurationResult: ScriptCompilationConfigurationResult?,
     project: Project
 ) : EditorNotificationPanel() {
 
     init {
         setText("There is a new script context available.")
         createComponentActionLabel("Apply context") {
-            onClick(compilationConfiguration)
+            onClick(compilationConfigurationResult)
         }
 
         createComponentActionLabel("Enable auto-reload") {
-            onClick(compilationConfiguration)
+            onClick(compilationConfigurationResult)
             KotlinScriptingSettings.getInstance(project).isAutoReloadEnabled = true
         }
     }

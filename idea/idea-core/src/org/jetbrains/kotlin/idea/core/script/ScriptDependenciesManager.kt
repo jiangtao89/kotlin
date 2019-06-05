@@ -29,8 +29,10 @@ import org.jetbrains.annotations.TestOnly
 import org.jetbrains.kotlin.idea.caches.project.getAllProjectSdks
 import org.jetbrains.kotlin.idea.core.script.dependencies.SyncScriptDependenciesLoader
 import org.jetbrains.kotlin.scripting.definitions.ScriptDependenciesProvider
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationResult
 import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
 import java.io.File
+import kotlin.script.experimental.api.valueOrNull
 
 
 // NOTE: this service exists exclusively because ScriptDependencyManager
@@ -38,7 +40,7 @@ import java.io.File
 class IdeScriptDependenciesProvider(
     private val scriptDependenciesManager: ScriptDependenciesManager
 ) : ScriptDependenciesProvider {
-    override fun getScriptRefinedCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? = scriptDependenciesManager.getRefinedCompilationConfiguration(file)
+    override fun getScriptConfigurationResult(file: VirtualFile): ScriptCompilationConfigurationResult? = scriptDependenciesManager.getRefinedCompilationConfiguration(file)
 }
 
 // TODO: rename and provide alias for compatibility - this is not only about dependencies anymore
@@ -47,12 +49,12 @@ class ScriptDependenciesManager internal constructor(
     private val cache: ScriptsCompilationConfigurationCache
 ) {
     fun getScriptClasspath(file: VirtualFile): List<VirtualFile> =
-        toVfsRoots(cacheUpdater.getCurrentCompilationConfiguration(file)?.dependenciesClassPath.orEmpty())
+        toVfsRoots(cacheUpdater.getCurrentCompilationConfiguration(file)?.valueOrNull()?.dependenciesClassPath.orEmpty())
 
-    fun getRefinedCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? =
+    fun getRefinedCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationResult? =
         cacheUpdater.getCurrentCompilationConfiguration(file)
 
-    fun getScriptSdk(file: VirtualFile): Sdk? = Companion.getScriptSdk(getRefinedCompilationConfiguration(file))
+    fun getScriptSdk(file: VirtualFile): Sdk? = Companion.getScriptSdk(getRefinedCompilationConfiguration(file)?.valueOrNull())
 
     fun getScriptDependenciesClassFilesScope(file: VirtualFile) = cache.scriptDependenciesClassFilesScope(file)
 

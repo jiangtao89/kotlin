@@ -13,6 +13,7 @@ import com.intellij.testFramework.TestDataFile;
 import kotlin.collections.ArraysKt;
 import kotlin.collections.CollectionsKt;
 import kotlin.io.FilesKt;
+import kotlin.script.experimental.api.ErrorHandlingKt;
 import kotlin.text.Charsets;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -433,7 +434,7 @@ public abstract class CodegenTestCase extends KtUsefulTestCase {
         if (externalImportsProvider != null) {
             myEnvironment.getSourceFiles().forEach(
                     file -> {
-                        ScriptCompilationConfigurationWrapper refinedConfiguration = externalImportsProvider.getScriptRefinedCompilationConfiguration(file);
+                        ScriptCompilationConfigurationWrapper refinedConfiguration = ErrorHandlingKt.valueOrNull(externalImportsProvider.getScriptConfigurationResult(file));
                         if (refinedConfiguration != null) {
                             files.addAll(refinedConfiguration.getDependenciesClassPath());
                         }

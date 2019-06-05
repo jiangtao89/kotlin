@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.idea.core.script.scriptCompilationConfiguration
 import org.jetbrains.kotlin.idea.core.script.scriptDependencies
 import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
 import org.jetbrains.kotlin.scripting.resolve.VirtualFileScriptSource
+import kotlin.script.experimental.api.asSuccess
 
 // TODO: rename and provide alias for compatibility - this is not only about dependencies anymore
 class FromFileAttributeScriptDependenciesLoader(project: Project) : ScriptDependenciesLoader(project) {
@@ -29,7 +30,7 @@ class FromFileAttributeScriptDependenciesLoader(project: Project) : ScriptDepend
                 debug(file) { "dependencies from fileAttributes = $it" }
             }
         }?.let {
-            saveToCache(file, it, skipSaveToAttributes = true)
+            saveToCache(file, it.asSuccess(), skipSaveToAttributes = true)
         }
     }
 

@@ -44,7 +44,7 @@ import org.jetbrains.kotlin.scripting.definitions.KotlinScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.ScriptDefinition
 import org.jetbrains.kotlin.scripting.definitions.findScriptDefinition
 import org.jetbrains.kotlin.scripting.resolve.LegacyResolverWrapper
-import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationResult
 import kotlin.script.experimental.dependencies.AsyncDependenciesResolver
 
 class ScriptsCompilationConfigurationUpdater(
@@ -65,7 +65,7 @@ class ScriptsCompilationConfigurationUpdater(
         listenForChangesInScripts()
     }
 
-    fun getCurrentCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? {
+    fun getCurrentCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationResult? {
         cache[file]?.let { return it }
 
         updateDependencies(file)

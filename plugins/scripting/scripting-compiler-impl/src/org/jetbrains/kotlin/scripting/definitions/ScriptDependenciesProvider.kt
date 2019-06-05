@@ -9,22 +9,24 @@ import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationWrapper
+import org.jetbrains.kotlin.scripting.resolve.ScriptCompilationConfigurationResult
+import kotlin.script.experimental.api.valueOrNull
 import kotlin.script.experimental.dependencies.ScriptDependencies
 
 interface ScriptDependenciesProvider {
 
     @Deprecated("Migrating to configuration refinement", level = DeprecationLevel.ERROR)
-    fun getScriptDependencies(file: VirtualFile): ScriptDependencies? = getScriptRefinedCompilationConfiguration(file)?.legacyDependencies
+    fun getScriptDependencies(file: VirtualFile): ScriptDependencies? =
+        getScriptConfigurationResult(file)?.valueOrNull()?.legacyDependencies
 
     @Deprecated("Migrating to configuration refinement", level = DeprecationLevel.ERROR)
     fun getScriptDependencies(file: PsiFile): ScriptDependencies? =
-        getScriptRefinedCompilationConfiguration(file.virtualFile ?: file.originalFile.virtualFile)?.legacyDependencies
+        getScriptConfigurationResult(file.virtualFile ?: file.originalFile.virtualFile)?.valueOrNull()?.legacyDependencies
 
-    fun getScriptRefinedCompilationConfiguration(file: VirtualFile): ScriptCompilationConfigurationWrapper? = null
+    fun getScriptConfigurationResult(file: VirtualFile): ScriptCompilationConfigurationResult? = null
 
-    fun getScriptRefinedCompilationConfiguration(file: PsiFile): ScriptCompilationConfigurationWrapper? =
-        getScriptRefinedCompilationConfiguration(file.virtualFile ?: file.originalFile.virtualFile)
+    fun getScriptConfigurationResult(file: PsiFile): ScriptCompilationConfigurationResult? =
+        getScriptConfigurationResult(file.virtualFile ?: file.originalFile.virtualFile)
 
     companion object {
         fun getInstance(project: Project): ScriptDependenciesProvider? =

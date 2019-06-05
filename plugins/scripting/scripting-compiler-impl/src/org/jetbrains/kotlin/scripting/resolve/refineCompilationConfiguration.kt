@@ -188,11 +188,13 @@ abstract class ScriptCompilationConfigurationWrapper(val script: SourceCode) {
     }
 }
 
+typealias ScriptCompilationConfigurationResult = ResultWithDiagnostics<ScriptCompilationConfigurationWrapper>
+
 fun refineScriptCompilationConfiguration(
     script: SourceCode,
     definition: ScriptDefinition,
     project: Project
-): ResultWithDiagnostics<ScriptCompilationConfigurationWrapper> {
+): ScriptCompilationConfigurationResult {
     val ktFileSource = script.toKtFileSource(definition, project)
     val legacyDefinition = definition.asLegacyOrNull<KotlinScriptDefinition>()
     if (legacyDefinition == null) {
