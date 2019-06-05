@@ -19,8 +19,10 @@ package org.jetbrains.kotlin.load.java.components
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.SourceElement
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
+import org.jetbrains.kotlin.descriptors.annotations.Annotations
 import org.jetbrains.kotlin.descriptors.annotations.KotlinRetention
 import org.jetbrains.kotlin.descriptors.annotations.KotlinTarget
+import org.jetbrains.kotlin.descriptors.findClassAcrossModuleDependencies
 import org.jetbrains.kotlin.load.java.descriptors.PossiblyExternalAnnotationDescriptor
 import org.jetbrains.kotlin.load.java.lazy.LazyJavaResolverContext
 import org.jetbrains.kotlin.load.java.lazy.descriptors.LazyJavaAnnotationDescriptor
@@ -28,13 +30,9 @@ import org.jetbrains.kotlin.load.java.structure.*
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.resolve.constants.ArrayValue
-import org.jetbrains.kotlin.resolve.constants.ConstantValue
-import org.jetbrains.kotlin.resolve.constants.EnumValue
-import org.jetbrains.kotlin.resolve.constants.StringValue
+import org.jetbrains.kotlin.resolve.constants.*
 import org.jetbrains.kotlin.storage.getValue
-import org.jetbrains.kotlin.types.ErrorUtils
-import org.jetbrains.kotlin.types.SimpleType
+import org.jetbrains.kotlin.types.*
 import java.lang.annotation.Documented
 import java.lang.annotation.Retention
 import java.lang.annotation.Target
@@ -48,6 +46,8 @@ object JavaAnnotationMapper {
     private val JAVA_DOCUMENTED_FQ_NAME = FqName(Documented::class.java.canonicalName)
     // Java8-specific thing
     private val JAVA_REPEATABLE_FQ_NAME = FqName("java.lang.annotation.Repeatable")
+
+    internal val THROWS_FQ_NAME = FqName("kotlin.jvm.Throws")
 
     internal val DEPRECATED_ANNOTATION_MESSAGE = Name.identifier("message")
     internal val TARGET_ANNOTATION_ALLOWED_TARGETS = Name.identifier("allowedTargets")
@@ -73,6 +73,9 @@ object JavaAnnotationMapper {
             if (javaAnnotation != null || annotationOwner.isDeprecatedInJavaDoc) {
                 return JavaDeprecatedAnnotationDescriptor(javaAnnotation, c)
             }
+        }
+        if (annotationOwner is JavaMethodBase && kotlinName == THROWS_FQ_NAME && annotationOwner.thrownExceptions.isNotEmpty()) {
+            return ThrowsAnnotationDescriptor(c, annotationOwner.thrownExceptions)
         }
         return kotlinToJavaNameMap[kotlinName]?.let { javaName ->
             annotationOwner.findAnnotation(javaName)?.let { annotation ->
@@ -114,6 +117,29 @@ open class JavaAnnotationDescriptor(
     override val allValueArguments: Map<Name, ConstantValue<*>> get() = emptyMap()
 
     override val isIdeExternalAnnotation: Boolean = annotation?.isIdeExternalAnnotation == true
+}
+
+class ThrowsAnnotationDescriptor(c: LazyJavaResolverContext, exceptionClassIds: List<ClassId>) : AnnotationDescriptor {
+    override val type: KotlinType =
+        c.module.findClassAcrossModuleDependencies(ClassId.topLevel(fqName))?.defaultType
+            ?: ErrorUtils.createErrorType("Unresolved Throws")
+
+    override val fqName: FqName
+        get() = JavaAnnotationMapper.THROWS_FQ_NAME
+
+    override val allValueArguments: Map<Name, ConstantValue<*>> =
+        mapOf(Name.identifier("exceptionClasses") to ArrayValue(exceptionClassIds.map { KClassValue(it, 0) }) { module ->
+            module.builtIns.getArrayType(
+                Variance.OUT_VARIANCE,
+                KotlinTypeFactory.simpleNotNullType(
+                    Annotations.EMPTY, module.builtIns.kClass,
+                    listOf(TypeProjectionImpl(Variance.OUT_VARIANCE, module.builtIns.throwable.defaultType))
+                )
+            )
+        })
+
+    override val source: SourceElement
+        get() = SourceElement.NO_SOURCE
 }
 
 class JavaDeprecatedAnnotationDescriptor(
