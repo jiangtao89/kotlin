@@ -73,6 +73,9 @@ private open class FakeScriptDefinition(val suffix: String = ".kts") :
     override fun isScript(fileName: String): Boolean = fileName.endsWith(suffix).also {
         if (it) matchCounter.incrementAndGet()
     }
+
+    override val isDefault: Boolean
+        get() = suffix == ".kts"
 }
 
 private class TestScriptDefinitionSource(val counter: AtomicInteger, val defGens: Iterable<() -> FakeScriptDefinition>) :

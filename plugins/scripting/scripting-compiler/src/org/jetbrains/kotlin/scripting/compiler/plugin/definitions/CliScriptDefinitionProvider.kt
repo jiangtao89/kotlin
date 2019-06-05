@@ -13,12 +13,12 @@ import kotlin.concurrent.write
 open class CliScriptDefinitionProvider : LazyScriptDefinitionProvider() {
     private val definitionsFromSources: MutableList<Sequence<ScriptDefinition>> = arrayListOf()
     private val definitions: MutableList<ScriptDefinition> = arrayListOf()
-    private var hasStandardDefinition = true
+    private var defaultDefinition: ScriptDefinition? = null
 
     override val currentDefinitions: Sequence<ScriptDefinition>
         get() {
             val base = definitions.asSequence() + definitionsFromSources.asSequence().flatMap { it }
-            return if (hasStandardDefinition) base + getDefaultDefinition() else base
+            return base + getDefaultDefinition()
         }
 
     fun setScriptDefinitions(newDefinitions: List<ScriptDefinition>) {
@@ -26,7 +26,8 @@ open class CliScriptDefinitionProvider : LazyScriptDefinitionProvider() {
             definitions.clear()
             val (withoutStdDef, stdDef) = newDefinitions.partition { !it.isDefault }
             definitions.addAll(withoutStdDef)
-            hasStandardDefinition = stdDef.isNotEmpty()
+            // TODO: consider reporting an error when several default definitions are supplied
+            defaultDefinition = stdDef.firstOrNull()
         }
     }
 
@@ -38,4 +39,6 @@ open class CliScriptDefinitionProvider : LazyScriptDefinitionProvider() {
             }
         }
     }
+
+    override fun getDefaultDefinition(): ScriptDefinition = defaultDefinition ?: super.getDefaultDefinition()
 }
